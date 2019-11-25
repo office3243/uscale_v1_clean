@@ -1,0 +1,295 @@
+{% extends "portal/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Assign Rates{% endblock %}
+
+{% block content %}
+<style>
+       #tb td{
+           max-width: 80px;
+       }
+       #tb th{
+            max-width: 90px;
+            background-color: #4285f4;
+            font-weight: bold;
+            color: white;
+       }
+       .tableMaterialHead{
+           background-color: #4285f4;
+           color: white;
+           font-weight: bold;
+
+       }
+</style>
+    <div class="container" style="padding: 50px 20px">
+
+       <div class="heading" id="heading">
+            <h3 class="text-black-50 font-weight-bold text-center">Add Rates | Step 3/4</h3>
+            <hr>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h4 class="float-left m-auto">Challan Details</h4>
+                    </div>
+                    <div class="col-lg-6">
+                        <i class="fa fa-eye-slash mt-2 float-right" id="challan_details_toggle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body" id="challanDetails">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Party Code</th>
+                            <td>{{ challan.party.name }} - {{ challan.party.get_display_text }}</td>
+                            <th>Challan No</th>
+                            <td>{{ challan.challan_no }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date</th>
+                            <td>{{ challan.created_on.date }}</td>
+                            <th>Time</th>
+                            <td>{{ challan.created_on.time }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <br><hr>
+        {% if challan.weight_set.exists %}
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <h4 class="float-left m-auto">Weight Entries</h4>
+                            </div>
+                            <div class="col-lg-6">
+                                <i class="fa fa-eye mt-2 float-right" id="entries_toggle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: none" class="card-body" id="entries">
+                        <div class="table-responsive  text-nowrap">
+                            <table class="table table-bordered table-hover">
+                                <tbody id="tb">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            <br>
+            <hr>
+            </div>
+        {% endif %}
+    {% if formset %}
+        <div class="">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Assign Rates</h4>
+                </div>
+                <div class="card-body">
+                    <div class="tempForm">
+                        <table class="table">
+                            <thead>
+                                <th>No</th>
+                                <th>Material</th>
+                                <th>Weight</th>
+                                <th>Rate</th>
+                                <th>Amount</th>
+                                <th></th>
+                            </thead>
+                            {% for form in formset %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ form.instance.material }}</td>
+                                    <td class="tempWeight" id="tempWeight_{{ forloop.counter }}">{{ form.instance.total_weight }}</td>
+                                    <td>
+                                        <div class="col-lg-3">
+                                            <input required style="width: 100px" is_focused="false" min="{{ form.instance.material.down_rate }}" max="{{ form.instance.material.up_rate }}" onfocus="makeFocused(this);" type="number" step="0.1" value="{{ form.rate_per_unit.initial }}" formset_order="{{ forloop.counter }}" target_id="{{ form.rate_per_unit.auto_id }}" class="tempInput form-control">
+                                        </div>
+                                    </td>
+                                    <td class="tempAmount" id="tempAmount_{{ forloop.counter }}">{{ form.instance.amount }}</td>
+                                </tr>
+                            {% endfor %}
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td><span id="temp_total_amount">0</span></td>
+                            </tr>
+                        </table>
+                        <hr>
+                        <button class="btn btn-primary" id="formsetSubmitBtn">Submit</button>
+                    </div>
+                    <div class="formset" style="display: none">
+                        <form method="post" id="formset" action="{% url "challans:assign_rates" challan_no=challan.challan_no %}">
+                            {% csrf_token %}
+                            {{ formset|crispy }}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <script>
+
+
+        function assign_temp_total_amount(){
+            let temp_total_amount = 0;
+            $(".tempAmount").each(function () {
+                temp_total_amount += parseFloat($(this).text());
+                }
+            );
+            $("#temp_total_amount").text(temp_total_amount.toFixed(2));
+        }
+
+        $("#challan_details_toggle").on("click", function () {
+            $("#challanDetails").toggle();
+            $(this).toggleClass("fa-eye fa-eye-slash");
+        });
+
+        $("#entries_toggle").on("click", function () {
+            $("#entries").toggle();
+            $(this).toggleClass("fa-eye fa-eye-slash");
+        });
+
+        function makeFocused(element){
+            element.select();
+            element.setAttribute("is_focused", "true");
+            console.log(element.getAttribute("is_focused"))
+        }
+
+        $(".tempInput").on("change", function () {
+            let targetInput = document.getElementById($(this).attr("target_id"));
+            targetInput.value = $(this).val();
+            $("#tempAmount_" + $(this).attr("formset_order")).text((parseFloat($(this).val()) * parseFloat($("#tempWeight_" + $(this).attr("formset_order")).text())).toFixed(2));
+            assign_temp_total_amount();
+        });
+
+        $("#formsetSubmitBtn").on("click", function () {
+            let form_invalid = false;
+            $(".tempInput").each(function () {
+
+                    console.log(1);
+                    if ($(this).attr("is_focused") === "false"){
+                        form_invalid = true;
+                    }
+
+            });
+            console.log(form_invalid);
+            if (!form_invalid){
+                $("#formset").submit();
+            }
+            else {
+                alert("Assign rates first");
+            }
+        });
+
+
+        $(".mt-selector").on("click", function () {
+            let current_material = $("#current_material");
+            current_material.attr("material_id", $(this).attr("material_id"));
+            current_material.text($(this).text());
+            $("#material_input").val($(this).attr("material_id"))
+
+        });
+
+
+        function assignEntriesTable() {
+
+            let weightList = [
+                                {% for weight in challan.weight_set.all %}
+                                    [
+                                        "{{ weight.material.get_display_text }}",
+                                        {% for weight_entry in weight.weightentry_set.all %}{{ weight_entry.entry }},{% endfor %}
+                                        {{ weight.rate_per_unit }},
+                                        {{ weight.total_weight }},
+                                        {{ weight.amount }},
+                                    ],
+                                {% endfor %}
+                            ];
+
+
+            let max_length=1;
+
+            for(let i=0;i<weightList.length;i++)
+            {
+                if(max_length < weightList[i].length)
+                {
+                    max_length = weightList[i].length;
+                }
+            }
+            for(let j=0,l=3;j<max_length;j++){
+               let tr = document.createElement("tr");
+               let th = document.createElement("th");
+               let thStr;
+               if(j<max_length-3){
+                   // for Table Header Vertical
+                   if (j===0){
+                       thStr = "Materials"
+                   }
+                   else{
+                       thStr = (j).toString();
+                   }
+                   let thxt = document.createTextNode(thStr);
+                   th.appendChild(thxt);
+                   tr.appendChild(th);
+                    for(let i=0;i<weightList.length;i++){
+                        let td = document.createElement("td");
+                        let txt;
+                        if (j===0){
+                            td.classList.add("tableMaterialHead");
+                        }
+                        if(j< weightList[i].length-3){
+                            txt= document.createTextNode(weightList[i][j]);
+                        }else{
+                            txt = document.createTextNode("");
+                        }
+                        td.appendChild(txt);
+                        tr.appendChild(td);
+                    }
+                }else{
+                   if (j === (max_length-1)){
+                       thStr = "AMOUNT"
+                   }
+                   else if (j === (max_length-2)){
+                       thStr = "TOTAL"
+                   }
+                   else if (j === (max_length-3)){
+                       thStr = "RATE"
+                   }
+                   let thxt = document.createTextNode(thStr);
+                   th.appendChild(thxt);
+                   tr.appendChild(th);
+                    for(let i=0;i<weightList.length;i++){
+                        let len = weightList[i].length;
+                        let td = document.createElement("td");
+                        let txt = document.createTextNode(weightList[i][len-l]);
+                        td.appendChild(txt);
+                        tr.appendChild(td);
+                    }
+                    l--
+                }
+               document.querySelector('#tb').appendChild(tr);
+            }
+        }
+        // Onlaod All Functions to be called from here
+        $(function () {
+            assign_temp_total_amount();
+            {% if challan.weight_set.exists %}
+                assignEntriesTable();
+            {% endif %}
+
+        });
+     </script>
+
+
+{% endblock %}

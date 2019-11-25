@@ -1,0 +1,389 @@
+{% extends "portal/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Add Weight Entries{% endblock %}
+
+{% block custom_links %}
+    <style>
+        td{
+          {#font-weight: bold!important;#}
+        }
+       #tb td{
+           max-width: 80px;
+       }
+       #tb th{
+            max-width: 90px;
+            background-color: #4285f4;
+            font-weight: bold;
+            color: white;
+       }
+       .tableMaterialHead{
+           background-color: #4285f4;
+           color: white;
+           font-weight: bold;
+       }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="col-lg-8 m-auto" style="padding: 50px 20px">
+
+        <div class="heading" id="heading">
+            <h3 class="text-black-50 font-weight-bold text-center">Add Entries | Step 1</h3>
+            <hr>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h3 class="float-left m-auto">Challan Details</h3>
+                    </div>
+                    <div class="col-lg-6">
+                        <i class="fa fa-eye-slash mt-2 float-right" id="challan_details_toggle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body" id="challanDetails">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Party</th>
+                            <td>{{ challan.party.name }} - {{ challan.party.get_display_text }}</td>
+                            <th>Challan No</th>
+                            <td>{{ challan.challan_no }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date</th>
+                            <td>{{ challan.created_on.date }}</td>
+                            <th>Time</th>
+                            <td>{{ challan.created_on.time }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <br><hr>
+        <div class="row text-center">
+            <div id="pickMaterial" class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="m-auto">Pick Material</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row m-auto">
+                            {% for material in materials %}
+                                <button class="btn btn-primary mt-selector" id="material_btn_{{ material.id }}" material_id="{{ material.id }}">{{ material.get_display_text }}</button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="weightForm" class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="m-auto">Add Entry</h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <tr>
+                                <th>Current Material</th>
+                                <td>
+                                    <span class="text-primary font-weight-bold" id="current_material">--</span>
+{#                                    <button class="btn btn-indigo font-weight-bold m-0" id="current_material" material_id="">-</button>#}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Last Entry</th>
+                                <td>
+                                    {% with challan.get_recent_weight_entry as recent_entry%}
+                                        {% if recent_entry %}
+                                            <form name="recent_entry_form" method="post" id="recent_entry_form" action="{% url "challans:recent_entry_delete" %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="challan_no" value="{{ challan.challan_no }}">
+                                            </form>
+
+                                            <div class="row">
+                                                <span id="recent_entry" class="float-left col-lg-10 text-center">
+                                                    {{ recent_entry.weight.material }} - {{ recent_entry.entry }}
+                                                </span>
+                                                <button data-toggle="modal" data-target="#recent_entry_dialog" class="btn float-right p-1 btn-danger btn-sm col-lg-1" id="recent_entry_form_btn"><i class="fa fa-times text-white"></i></button>
+                                            </div>
+                                        {% else %}
+                                            No Last Entry
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                            </tr>
+                        </table>
+                        <hr>
+                        <form method="post" action="{% url "challans:weight_entry_create" %}">
+                            {% csrf_token %}
+                            <input name="challan_no" value="{{ challan.challan_no }}" hidden>
+                            <input id="material_input" name="material_id" hidden required>
+                            <div class="row col-lg-10" id="weight_inputs" style="margin: auto;display: none">
+                                <div class="float-left col-lg-8 mt-2">
+                                    <div class="form-group">
+                                        <input id="weight_input" class="weight_entry_input form-control" autofocus="autofocus" name="entry_weight" material_id="{{ materials.first.id }}" placeholder="Enter Weight">
+                                    </div>
+                                </div>
+                                <div class="float-right col-lg-4 mb-5">
+                                    <button type="submit" class="btn btn-primary">Save</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <hr>
+        {% if challan.weight_set.exists %}
+            <div id="entries">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="m-auto">Weight Entries</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive  text-nowrap">
+                            <table class="table table-bordered table-hover">
+                                <tbody id="tb">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="m-auto">Submit Entries</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ challan.get_entries_submit_url }}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="has_reports">Challan Reports</label>
+                            <select class="form-control" id="has_reports" name="has_reports">
+                                <option id="has_reports_no" value="N">No</option>
+                                <option id="has_reports_yes" value="Y">Yes</option>
+                            </select>
+                            <hr>
+                        </div>
+                        <button class="btn float-right btn-primary" type="submit">Submit</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+
+{#    <div class="modal col-lg-4 fade" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" id="recent_entry_dialog" style="display: none">#}
+{#        <div class="card">#}
+{#            <div class="card-body">#}
+{#                <span class="text-danger">#}
+{#                    Do you want to delete last entry ?#}
+{#                </span>#}
+{#            </div>#}
+{#            <div class="card-footer">#}
+{#                <button onclick="hide_recent_entry_dialog();" class="btn btn-light">Cancel</button>#}
+{#                <button onclick="recent_entry_form.submit()" class="btn btn-danger">Delete</button>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="recent_entry_dialog" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document" style="margin-top: 25%;">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Warning!</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          <div class="modal-body">
+              <span class="text-danger font-weight-bold">
+                Do you want to delete last entry?
+              </span>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" onclick="recent_entry_form.submit();">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+{% endblock %}
+{% block custom_script %}
+
+    <script>
+
+
+
+        $("#challan_details_toggle").on("click", function () {
+            $("#challanDetails").toggle();
+            $(this).toggleClass("fa-eye fa-eye-slash");
+        });
+
+        function makeFocused(element){
+            element.setAttribute("is_focused", "true");
+        }
+
+        $(".tempInput").on("change", function () {
+            let targetInput = document.getElementById($(this).attr("target_id"));
+            targetInput.value = $(this).val();
+            $("#tempAmount_" + $(this).attr("formset_order")).text((parseFloat($(this).val()) * parseFloat($("#tempWeight_" + $(this).attr("formset_order")).text())).toFixed(2));
+        });
+
+        $("#formsetSubmitBtn").on("click", function () {
+            let form_invalid = false;
+            $("tempInput").each(function () {
+                    if ($(this).attr("is_focused") === "false"){
+                        form_invalid = true;
+                    }
+
+            });
+            if (!form_invalid){
+                $("#formset").submit();
+            }
+            else {
+                alert("Assign rates first");
+            }
+        });
+
+
+        $(".mt-selector").on("click", function () {
+            let current_material = $("#current_material");
+            current_material.attr("material_id", $(this).attr("material_id"));
+            current_material.text($(this).text());
+            $("#material_input").val($(this).attr("material_id"));
+            $("#weight_inputs").show();
+            $("#weight_input").focus();
+
+        });
+
+
+        function assignEntriesTable() {
+
+            let weightList = [
+                                {% for weight in challan.weight_set.all %}
+                                    [
+                                        "{{ weight.material.get_display_text }}",
+                                        {% for weight_entry in weight.weightentry_set.all %}{{ weight_entry.entry }},{% endfor %}
+                                        {{ weight.total_weight }},
+                                    ],
+                                {% endfor %}
+                            ];
+
+
+            let max_length=1;
+
+            for(let i=0;i<weightList.length;i++)
+            {
+                if(max_length < weightList[i].length)
+                {
+                    max_length = weightList[i].length;
+                }
+            }
+            for(let j=0,l=1;j<max_length;j++){
+               let tr = document.createElement("tr");
+               let th = document.createElement("th");
+               let thStr;
+               if(j<max_length-1){
+                   // for Table Header Vertical
+                   if (j===0){
+                       thStr = "Materials"
+                   }
+                   else{
+                       thStr = (j).toString();
+                   }
+                   let thxt = document.createTextNode(thStr);
+                   th.appendChild(thxt);
+                   tr.appendChild(th);
+                    for(let i=0;i<weightList.length;i++){
+                        let td = document.createElement("td");
+                        let txt;
+                        if (j===0){
+                            td.classList.add("tableMaterialHead");
+                        }
+                        if(j< weightList[i].length-1){
+                            txt= document.createTextNode(weightList[i][j]);
+                        }else{
+                            txt = document.createTextNode("");
+                        }
+                        td.appendChild(txt);
+                        tr.appendChild(td);
+                    }
+                }else{
+                   if (j === (max_length-1)){
+                       thStr = "TOTAL"
+                   }
+                   let thxt = document.createTextNode(thStr);
+                   th.appendChild(thxt);
+                   tr.appendChild(th);
+                    for(let i=0;i<weightList.length;i++){
+                        let len = weightList[i].length;
+                        let td = document.createElement("td");
+                        let txt = document.createTextNode(weightList[i][len-l]);
+                        td.appendChild(txt);
+                        tr.appendChild(td);
+                    }
+                    l--
+                }
+               document.querySelector('#tb').appendChild(tr);
+            }
+        }
+
+        function assignLMT() {
+            let url_string = window.location.href;
+            let url = new URL(url_string);
+            let lmtid = url.searchParams.get("lmtid");
+            if (lmtid){
+                $("#material_input").val(lmtid);
+                $("#material_btn_" + lmtid)[0].click();
+            }
+
+        }
+
+        function assignHasReports(){
+            {% if challan.get_challan_has_report %}
+                $("#has_reports").val("Y");
+                $("#has_reports_no").addClass("bg-danger").attr("disabled", "disabled");
+            {% else %}
+                $("#has_reports").val("N");
+            {% endif %}
+        }
+
+        // Onlaod All Functions to be called from here
+        $(function () {
+            assignLMT();
+            {% if challan.weight_set.exists %}
+                assignEntriesTable();
+            {% endif %}
+            assignHasReports();
+
+        });
+
+
+
+
+
+        </script>
+
+
+{% endblock %}
+
+
+

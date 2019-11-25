@@ -1,0 +1,45 @@
+{% load static %}
+{% load constant_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    {% block full_title %}<title>{% block title %}{% endblock %} - U Scale {% get_branch_name %}</title>{% endblock %}
+    <script type="text/javascript" src="{% static "js/jquery-3.4.1.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/main.js" %}"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    <link href="{% static "css/bootstrap.min.css" %}" rel=  "stylesheet">
+    <link href="{% static "css/mdb.min.css" %}" rel="stylesheet">
+    <link href="{% static "css/style.css" %}" rel="stylesheet">
+
+    {% block custom_links %}
+    {% endblock %}
+
+</head>
+
+<body style="">
+
+    {% if messages %}
+        {% for message in messages %}
+            <span class="alert alert-{{ message.tags }} btn-block" style="margin-bottom: 0!important;">{{ message }}</span>
+        {% endfor %}
+    {% endif %}
+    {% if user.is_authenticated %}
+        {% include "cms_admin/header.html" %}
+    {% endif %}
+
+
+    {% block content %}
+    {% endblock %}
+    <script type="text/javascript" src="{% static "js/popper.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/bootstrap.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/mdb.min.js" %}"></script>
+    {% block custom_script %}
+    {% endblock %}
+</body>
+
+</html>

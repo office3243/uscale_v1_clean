@@ -1,0 +1,43 @@
+{% extends "portal/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Challan Done{% endblock %}
+
+{% block content %}
+
+    <div class="container" style="padding: 50px 20px">
+
+        <div class="heading" id="heading">
+            <h3 class="text-black-50 font-weight-bold text-center">Challan Created</h3>
+        </div>
+        <div class="container" id="challanDetails">
+
+            <table class="table table-bordered table-primary">
+                <tbody>
+                    <tr>
+                        <th>Party Code</th>
+                        <td>{{ challan.party.get_display_text }}</td>
+                        <th>Challan No</th>
+                        <td>{{ challan.challan_no }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date</th>
+                        <td>{{ challan.created_on.date }}</td>
+                        <th>Time</th>
+                        <td>{{ challan.created_on.time }}</td>
+                    </tr>
+                    <tr>
+                        <th>Total Amount</th>
+                        <td>{{ challan.total_amount }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <button class="btn btn-primary btn-sm">Print</button>
+
+    <a href="{% url "portal:home" %}"><button class="btn blue-gradient">Go to home</button></a>
+
+{% endblock %}

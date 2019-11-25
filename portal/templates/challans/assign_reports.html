@@ -1,0 +1,546 @@
+{% extends "portal/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create Challan{% endblock %}
+
+{% block content %}
+<style>
+       #tb td{
+           max-width: 80px;
+       }
+       #tb th{
+            max-width: 90px;
+            background-color: #4285f4;
+            font-weight: bold;
+            color: white;
+       }
+       .tableMaterialHead{
+           background-color: #4285f4;
+           color: white;
+           font-weight: bold;
+
+       }
+</style>
+    <div class="container" style="padding: 50px 20px">
+       <div class="heading" id="heading">
+            <h3 class="text-black-50 font-weight-bold text-center">Add Reports | Step 2/4</h3>
+            <hr>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h3 class="float-left m-auto">Challan Details</h3>
+                    </div>
+                    <div class="col-lg-6">
+                        <i class="fa fa-eye-slash mt-2 float-right" id="challan_details_toggle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body" id="challanDetails">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Party Code</th>
+                            <td>{{ challan.party.name }} - {{ challan.party.get_display_text }}</td>
+                            <th>Challan No</th>
+                            <td>{{ challan.challan_no }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date</th>
+                            <td>{{ challan.created_on.date }}</td>
+                            <th>Time</th>
+                            <td>{{ challan.created_on.time }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <br><hr>
+        {% if challan.weight_set.exists %}
+            <div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <h3 class="float-left m-auto">Weight Entries</h3>
+                            </div>
+                            <div class="col-lg-6">
+                                <i class="fa fa-eye-slash mt-2 float-right" id="entries_toggle"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body" id="entries">
+                        <div class="table-responsive  text-nowrap">
+                            <table class="table table-bordered table-hover">
+                                <tbody id="tb">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            <br>
+            <hr>
+            </div>
+        {% endif %}
+
+        <div>
+            <div class="tempForm">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="m-auto">Add Reports</h3>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="card-content p-4 bg-light">
+                            <h5>Select Materials for report</h5>
+                            {% for weight in challan.weight_set.all %}
+                                {% if not weight.material.has_report %}
+                                    <button class="btn btn-info btn-sm weight_toggle" weight_id="{{ weight.id }}" id="material__{{ weight.material.id }}">{{ weight.material }}</button>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <form method="post" action="{{ challan.get_assign_reports_url }}">
+                            {% csrf_token %}
+                            <table class="table">
+                                <thead>
+                                    <th>No</th>
+                                    <th>Material</th>
+                                    <th>Total Weight</th>
+                                    <th>Report Weight</th>
+                                    <th>Report Type</th>
+                                </thead>
+                                {% for weight in challan.weight_set.all %}
+                                    <tr id="weight_{{ weight.id }}" style="display: {% if weight.reportweight or weight.material.has_report %}{% else %}none{% endif %}">
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ weight.material }}</td>
+                                        <td id="total_weight_{{ weight.id }}">{{ weight.total_weight }}</td>
+                                        <td>
+                                            <div class="col-lg-4">
+                                                <input style="width: 150px" required value="{{ weight.reportweight.weight_count }}" min="0" id="report_input__{{ weight.id }}" name="report_input__{{ weight.id }}" type="number" step="0.01" class="form-control report_input">
+                                                <small>Default - 10%</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="">
+                                                <select style="width: 100px"  class="form-control report_type" name="report_type__{{ weight.id }}" required>
+                                                    <option class="type_return" {% if weight.material.has_report %}selected{% endif %} value="RT">Return</option>
+                                                    <option class="type_report" {% if not weight.material.has_report %}selected{% endif %} value="RP">Report</option>
+                                                </select>
+                                                <small>This change will reflect in Stocks</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                            <button class="btn btn-primary" type="submit">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+
+        $(".report_input").on("click", function () {
+           $(this).select();
+        });
+
+
+        $(".weight_toggle").on("click", function () {
+           let weight_id = $(this).attr("weight_id");
+           $("#weight_" + weight_id).toggle();
+           $("#report_input__" + weight_id).val("");
+        });
+
+        $("#challan_details_toggle").on("click", function () {
+            $("#challanDetails").toggle();
+            $(this).toggleClass("fa-eye fa-eye-slash");
+        });
+
+        $("#entries_toggle").on("click", function () {
+            $("#entries").toggle();
+            $(this).toggleClass("fa-eye fa-eye-slash");
+        });
+
+        function assignEntriesTable() {
+
+            let weightList = [
+                                {% for weight in challan.weight_set.all %}
+                                    [
+                                        "{{ weight.material.get_display_text }}",
+                                        {% for weight_entry in weight.weightentry_set.all %}"{{ weight_entry.entry }}",{% endfor %}
+                                        "{{ weight.get_report_weight_display }}",
+                                        "{{ weight.total_weight }}",
+                                    ],
+                                {% endfor %}
+                            ];
+
+
+            let max_length=1;
+
+            for(let i=0;i<weightList.length;i++)
+            {
+                if(max_length < weightList[i].length)
+                {
+                    max_length = weightList[i].length;
+                }
+            }
+            for(let j=0,l=2;j<max_length;j++){
+               let tr = document.createElement("tr");
+               let th = document.createElement("th");
+               let thStr;
+               if(j<max_length-2){
+                   // for Table Header Vertical
+                   if (j===0){
+                       thStr = "Materials"
+                   }
+                   else{
+                       thStr = (j).toString();
+                   }
+                   let thxt = document.createTextNode(thStr);
+                   th.appendChild(thxt);
+                   tr.appendChild(th);
+                    for(let i=0;i<weightList.length;i++){
+                        let td = document.createElement("td");
+                        let txt;
+                        if (j===0){
+                            td.classList.add("tableMaterialHead");
+                        }
+                        if(j< weightList[i].length-2){
+                            txt= document.createTextNode(weightList[i][j]);
+                        }else{
+                            txt = document.createTextNode("");
+                        }
+                        td.appendChild(txt);
+                        tr.appendChild(td);
+                    }
+                }else{
+                   if (j === (max_length-1)){
+                       thStr = "TOTAL"
+                   }
+                   else if (j === (max_length-2)){
+                       thStr = "REPORT"
+                   }
+                   let thxt = document.createTextNode(thStr);
+                   th.appendChild(thxt);
+                   tr.appendChild(th);
+                    for(let i=0;i<weightList.length;i++){
+                        let len = weightList[i].length;
+                        let td = document.createElement("td");
+                        let txt = document.createTextNode(weightList[i][len-l]);
+                        td.appendChild(txt);
+                        tr.appendChild(td);
+                    }
+                    l--
+                }
+               document.querySelector('#tb').appendChild(tr);
+            }
+        }
+
+        function assignLMT() {
+            let url_string = window.location.href;
+            let url = new URL(url_string);
+            let lmtid = url.searchParams.get("lmtid");
+            if (lmtid){
+                $("#material_input").val(lmtid);
+                $("#material_btn_" + lmtid)[0].click();
+            }
+
+        }
+
+        // Onlaod All Functions to be called from here
+        $(function () {
+            assignLMT();
+            {% if challan.weight_set.exists %}
+                assignEntriesTable();
+            {% endif %}
+
+        });
+     </script>
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+{#{% extends "portal/base.html" %}#}
+{#{% load crispy_forms_tags %}#}
+{##}
+{#{% block title %}Create Challan{% endblock %}#}
+{##}
+{#{% block content %}#}
+{#<style>#}
+{#       #tb td{#}
+{#           max-width: 80px;#}
+{#       }#}
+{#       #tb th{#}
+{#            max-width: 90px;#}
+{#            background-color: #4285f4;#}
+{#            font-weight: bold;#}
+{#            color: white;#}
+{#       }#}
+{#       .tableMaterialHead{#}
+{#           background-color: #4285f4;#}
+{#           color: white;#}
+{#           font-weight: bold;#}
+{##}
+{#       }#}
+{#</style>#}
+{#    <div class="container" style="padding: 50px 20px">#}
+{#       <div class="heading" id="heading">#}
+{#            <h3 class="text-black-50 font-weight-bold text-center">Add Reports | Step 2/4</h3>#}
+{#            <hr>#}
+{#        </div>#}
+{##}
+{#        <div class="card">#}
+{#            <div class="card-header">#}
+{#                <div class="row">#}
+{#                    <div class="col-lg-6">#}
+{#                        <h3 class="float-left m-auto">Challan Details</h3>#}
+{#                    </div>#}
+{#                    <div class="col-lg-6">#}
+{#                        <i class="fa fa-eye-slash mt-2 float-right" id="challan_details_toggle"></i>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#            <div class="card-body" id="challanDetails">#}
+{#                <table class="table">#}
+{#                    <tbody>#}
+{#                        <tr>#}
+{#                            <th>Party Code</th>#}
+{#                            <td>{{ challan.party.name }} - {{ challan.party.get_display_text }}</td>#}
+{#                            <th>Challan No</th>#}
+{#                            <td>{{ challan.challan_no }}</td>#}
+{#                        </tr>#}
+{#                        <tr>#}
+{#                            <th>Date</th>#}
+{#                            <td>{{ challan.created_on.date }}</td>#}
+{#                            <th>Time</th>#}
+{#                            <td>{{ challan.created_on.time }}</td>#}
+{#                        </tr>#}
+{#                    </tbody>#}
+{#                </table>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{##}
+{#        <br><hr>#}
+{#        {% if challan.weight_set.exists %}#}
+{#            <div>#}
+{#                <div class="card">#}
+{#                    <div class="card-header">#}
+{#                        <div class="row">#}
+{#                            <div class="col-lg-6">#}
+{#                                <h3 class="float-left m-auto">Weight Entries</h3>#}
+{#                            </div>#}
+{#                            <div class="col-lg-6">#}
+{#                                <i class="fa fa-eye-slash mt-2 float-right" id="entries_toggle"></i>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                    <div class="card-body" id="entries">#}
+{#                        <div class="table-responsive  text-nowrap">#}
+{#                            <table class="table table-bordered table-hover">#}
+{#                                <tbody id="tb">#}
+{#                                </tbody>#}
+{#                            </table>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            <br>#}
+{#            <hr>#}
+{#            </div>#}
+{#        {% endif %}#}
+{##}
+{#        <div>#}
+{#            <div class="tempForm">#}
+{#                <div class="card">#}
+{#                    <div class="card-header">#}
+{#                        <h3 class="m-auto">Add Reports</h3>#}
+{#                    </div>#}
+{##}
+{#                    <div class="card-body">#}
+{##}
+{#                        <div class="card-content p-4 bg-light">#}
+{#                            <h5>Select Materials for report</h5>#}
+{#                            {% for weight in challan.weight_set.all %}#}
+{#                                {% if not weight.material.has_report %}#}
+{#                                    <button class="btn btn-info btn-sm weight_toggle" weight_id="{{ weight.id }}" id="material__{{ weight.material.id }}">{{ weight.material }}</button>#}
+{#                                {% endif %}#}
+{#                            {% endfor %}#}
+{#                        </div>#}
+{##}
+{#                        <form method="post" action="{{ challan.get_assign_reports_url }}">#}
+{#                            {% csrf_token %}#}
+{#                            <table class="table">#}
+{#                                <thead>#}
+{#                                    <th>No</th>#}
+{#                                    <th>Material</th>#}
+{#                                    <th>Total Weight</th>#}
+{#                                    <th>Report Weight</th>#}
+{#                                    <th>Report Type</th>#}
+{#                                </thead>#}
+{#                                {% for weight in challan.weight_set.all %}#}
+{#                                    <tr id="weight_{{ weight.id }}">#}
+{#                                        <td>{{ forloop.counter }}</td>#}
+{#                                        <td>{{ weight.material }}</td>#}
+{#                                        <td id="total_weight_{{ weight.id }}">{{ weight.total_weight }}</td>#}
+{#                                        <td>#}
+{#                                            <div class="col-lg-4">#}
+{#                                                <input style="width: 150px" required value="{{ weight.reportweight.weight_count }}" min="0" id="report_input__{{ weight.id }}" name="report_input__{{ weight.id }}" type="number" step="0.01" class="form-control report_input">#}
+{#                                                <small>Default - 10%</small>#}
+{#                                            </div>#}
+{#                                        </td>#}
+{#                                        <td>#}
+{#                                            <div class="">#}
+{#                                                <select style="width: 100px"  class="form-control report_type" name="report_type__{{ weight.id }}" required>#}
+{#                                                    <option class="type_return" {% if weight.material.has_report %}selected{% endif %} value="RT">Return</option>#}
+{#                                                    <option class="type_report" {% if not weight.material.has_report %}selected{% endif %} value="RP">Report</option>#}
+{#                                                </select>#}
+{#                                                <small>This change will reflect in Stocks</small>#}
+{#                                            </div>#}
+{#                                        </td>#}
+{#                                    </tr>#}
+{#                                {% endfor %}#}
+{#                            </table>#}
+{#                            <button class="btn btn-primary" type="submit">Submit</button>#}
+{#                        </form>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{#    <script>#}
+{##}
+{#        $(".report_input").on("click", function () {#}
+{#           $(this).select();#}
+{#        });#}
+{##}
+{##}
+{#        $(".weight_toggle").on("click", function () {#}
+{#           let weight_id = $(this).attr("weight_id");#}
+{#           $("#weight_" + weight_id).toggle();#}
+{#           $("#report_input__" + weight_id).val("");#}
+{#        });#}
+{##}
+{#        $("#challan_details_toggle").on("click", function () {#}
+{#            $("#challanDetails").toggle();#}
+{#            $(this).toggleClass("fa-eye fa-eye-slash");#}
+{#        });#}
+{##}
+{#        $("#entries_toggle").on("click", function () {#}
+{#            $("#entries").toggle();#}
+{#            $(this).toggleClass("fa-eye fa-eye-slash");#}
+{#        });#}
+{##}
+{#        function assignEntriesTable() {#}
+{##}
+{#            let weightList = [#}
+{#                                {% for weight in challan.weight_set.all %}#}
+{#                                    [#}
+{#                                        "{{ weight.material.get_display_text }}",#}
+{#                                        {% for weight_entry in weight.weightentry_set.all %}"{{ weight_entry.entry }}",{% endfor %}#}
+{#                                        "{{ weight.get_report_weight_display }}",#}
+{#                                        "{{ weight.total_weight }}",#}
+{#                                    ],#}
+{#                                {% endfor %}#}
+{#                            ];#}
+{##}
+{##}
+{#            let max_length=1;#}
+{##}
+{#            for(let i=0;i<weightList.length;i++)#}
+{#            {#}
+{#                if(max_length < weightList[i].length)#}
+{#                {#}
+{#                    max_length = weightList[i].length;#}
+{#                }#}
+{#            }#}
+{#            for(let j=0,l=2;j<max_length;j++){#}
+{#               let tr = document.createElement("tr");#}
+{#               let th = document.createElement("th");#}
+{#               let thStr;#}
+{#               if(j<max_length-2){#}
+{#                   // for Table Header Vertical#}
+{#                   if (j===0){#}
+{#                       thStr = "Materials"#}
+{#                   }#}
+{#                   else{#}
+{#                       thStr = (j).toString();#}
+{#                   }#}
+{#                   let thxt = document.createTextNode(thStr);#}
+{#                   th.appendChild(thxt);#}
+{#                   tr.appendChild(th);#}
+{#                    for(let i=0;i<weightList.length;i++){#}
+{#                        let td = document.createElement("td");#}
+{#                        let txt;#}
+{#                        if (j===0){#}
+{#                            td.classList.add("tableMaterialHead");#}
+{#                        }#}
+{#                        if(j< weightList[i].length-2){#}
+{#                            txt= document.createTextNode(weightList[i][j]);#}
+{#                        }else{#}
+{#                            txt = document.createTextNode("");#}
+{#                        }#}
+{#                        td.appendChild(txt);#}
+{#                        tr.appendChild(td);#}
+{#                    }#}
+{#                }else{#}
+{#                   if (j === (max_length-1)){#}
+{#                       thStr = "TOTAL"#}
+{#                   }#}
+{#                   else if (j === (max_length-2)){#}
+{#                       thStr = "REPORT"#}
+{#                   }#}
+{#                   let thxt = document.createTextNode(thStr);#}
+{#                   th.appendChild(thxt);#}
+{#                   tr.appendChild(th);#}
+{#                    for(let i=0;i<weightList.length;i++){#}
+{#                        let len = weightList[i].length;#}
+{#                        let td = document.createElement("td");#}
+{#                        let txt = document.createTextNode(weightList[i][len-l]);#}
+{#                        td.appendChild(txt);#}
+{#                        tr.appendChild(td);#}
+{#                    }#}
+{#                    l--#}
+{#                }#}
+{#               document.querySelector('#tb').appendChild(tr);#}
+{#            }#}
+{#        }#}
+{##}
+{#        function assignLMT() {#}
+{#            let url_string = window.location.href;#}
+{#            let url = new URL(url_string);#}
+{#            let lmtid = url.searchParams.get("lmtid");#}
+{#            if (lmtid){#}
+{#                $("#material_input").val(lmtid);#}
+{#                $("#material_btn_" + lmtid)[0].click();#}
+{#            }#}
+{##}
+{#        }#}
+{##}
+{#        // Onlaod All Functions to be called from here#}
+{#        $(function () {#}
+{#            assignLMT();#}
+{#            {% if challan.weight_set.exists %}#}
+{#                assignEntriesTable();#}
+{#            {% endif %}#}
+{##}
+{#        });#}
+{#     </script>#}
+{##}
+{##}
+{#{% endblock %}#}

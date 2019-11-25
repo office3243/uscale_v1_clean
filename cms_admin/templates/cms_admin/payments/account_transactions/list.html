@@ -1,0 +1,93 @@
+{% extends "cms_admin/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Account Transaction List{% endblock %}
+
+{% block custom_links %}
+    <link href="{% static "css/addons/datatables.min.css" %}" rel="stylesheet">
+    <link href="{% static "css/addons/datatables-select.min.css" %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+    <br><br>
+    <div class="col-lg-11 m-auto">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h3 class="m-auto">Account Transaction List</h3>
+            </div>
+            <div class="card-body">
+                 <div class="table p-3 border" style="border-radius: 5px">
+                     <table id="dt-basic-checkbox" class="table table-striped table-bordered" cellspacing="0" width="100%">
+                         <thead class="thead-light">
+                            <th style="width: 30px">NO</th>
+                            <th>Challan</th>
+                            <th>Party</th>
+                            <th>DPP No</th>
+                            <th>Amount</th>
+                            <th>Ch Rm Amount</th>
+                            <th>Ch Total Amount</th>
+                            <th>Account</th>
+                            <th>Firm</th>
+                            <th>Payed On</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                         </thead>
+                         <tbody>
+                             {% if account_transactions %}
+                                 {% for account_transaction in account_transactions %}
+                                     <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                         <td>{{ account_transaction.payment.challan.challan_no }}</td>
+                                        <td>{{ account_transaction.bank_account.party }}</td>
+                                        <td>{{ account_transaction.actr_no }}</td>
+                                        <td>{{ account_transaction.amount }}</td>
+                                        <td>{{ account_transaction.payment.get_remaining_amount }}</td>
+                                        <td>{{ account_transaction.payment.amount }}</td>
+                                        <td>{{ account_transaction.bank_account.get_display_text }}</td>
+                                        <td>{{ account_transaction.payment_party }}</td>
+                                        <td>{{ account_transaction.payed_on }}</td>
+                                        <td>
+                                            {% if account_transaction.status == "DN" %}
+                                                <i class="fa fa-check text-success"></i>
+                                            {% else %}
+                                                <i class="fa fa-times text-danger"></i>
+                                            {% endif %}
+                                            <span style="display: none">{{ account_transaction.status }}</span>
+                                        </td>
+                                        <td class="m-auto">
+{#                                            <a class="m-3" href="{{ account_transaction.get_admin_absolute_url }}"><i class="fa fa-eye"></i></a>#}
+                                            {% if user.username == "executive2" %}
+                                                <a class="m-3" href="{{ account_transaction.get_admin_update_url }}"><i class="fa fa-pen"></i></a>
+                                            {% endif %}
+                                        </td>
+                                     </tr>
+                                 {% endfor %}
+                             {% else %}
+                                 <span class="text-black-50 font-weight-bold">No Parties Found</span>
+                             {% endif %}
+                         </tbody>
+                    </table>
+                    {% include "portal/goback_btn.html" %}
+                 </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block custom_script %}
+    <script type="text/javascript" src="{% static "js/addons/datatables.min.js" %}"></script>
+    <script src="{% static "js/addons/datatables-select.min.js" %}" rel="stylesheet"></script>
+    <script>
+        $('#dt-basic-checkbox').dataTable({
+
+        "pageLength": 25,
+
+        columnDefs: [{
+        orderable: false,
+        targets: 0
+        }],
+
+        });
+    </script>
+{% endblock %}

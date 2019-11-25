@@ -1,0 +1,95 @@
+{% load static  %}
+{% load constant_tags %}
+<!--Navbar -->
+<!--Navbar -->
+<nav class="mb-1 navbar navbar-expand-lg navbar-dark primary-color">
+  <a class="navbar-brand" href="#">U-Scale - {% get_branch_name %}</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent-333"
+    aria-controls="navbarSupportedContent-333" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarSupportedContent-333">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="{% url "portal:home" %}">Dashboard
+{#          <span class="sr-only">(current)</span>#}
+        </a>
+      </li>
+
+      <li class="nav-item">
+        <a class="nav-link" href="{% url "challans:list" %}">Challans</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url "parties:list" %}">Parties</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url "bank_accounts:list" %}">Bank Accounts</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url "materials:list" %}">Materials</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{% url "rates:rate_group_list" %}">Rate Groups</a>
+      </li>
+      <li class="nav-item">
+        {% if user.is_staff or user.is_superuser %}
+            <a class="nav-link bg-success" href="{% url "cms_admin:wallet_list" %}">Wallets</a>
+        {% else %}
+            <a class="nav-link" href="{% url "parties:wallet_list" %}">Wallets</a>
+        {% endif %}
+      </li>
+      {% if user.is_staff or user.is_superuser %}
+          <li class="nav-item">
+              <a class="nav-link bg-success" href="{% url "cms_admin:wallet_advances_list" %}">W Advances</a>
+          </li>
+      {% endif %}
+      <li class="nav-item">
+        {% if user.is_staff or user.is_superuser %}
+            <a class="nav-link bg-success" href="{% url "cms_admin:payments_list" %}">Payments</a>
+        {% else %}
+            <a class="nav-link" href="{% url "payments:list" %}">Payments</a>
+        {% endif %}
+      </li>
+      {% if user.is_staff or user.is_superuser %}
+          <li class="nav-item">
+              <a class="nav-link bg-success" href="{% url "cms_admin:account_transactions_list" %}">AC Transactions</a>
+          </li>
+      {% endif %}
+    </ul>
+    <ul class="navbar-nav ml-auto nav-flex-icons">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink-333" data-toggle="dropdown"
+          aria-haspopup="true" aria-expanded="false">
+{#          <i class="fas fa-user"></i>#}
+            Outward
+        </a>
+        <div class="dropdown-menu dropdown-menu-right dropdown-default"
+          aria-labelledby="navbarDropdownMenuLink-333">
+          <a class="dropdown-item" href="{% url "loadings:list" %}">Loadings</a>
+          <a class="dropdown-item" href="{% url "stocks:view" %}">Stocks</a>
+        </div>
+      </li>
+    </ul>
+    <ul class="navbar-nav ml-auto nav-flex-icons">
+      <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLink-333" data-toggle="dropdown"
+          aria-haspopup="true" aria-expanded="false">
+          <i class="fas fa-user"></i>
+        </a>
+        <div class="dropdown-menu dropdown-menu-right dropdown-default"
+          aria-labelledby="navbarDropdownMenuLink-333">
+          {% if user.is_authenticated %}
+{#              <a class="dropdown-item" href="{% url "accounts:profile_update" %}">Profile</a>#}
+{#              <a class="dropdown-item" href="{% url "accounts:password_change" %}">Change Password</a>#}
+              <a class="dropdown-item" href="{% url "accounts:logout" %}">Logout</a>
+          {% else %}
+              <a class="dropdown-item" href="{% url "accounts:login" %}">Login</a>
+                  <a class="dropdown-item" href="{% url "accounts:register" %}">Register</a>
+          {% endif %}
+
+        </div>
+      </li>
+    </ul>
+  </div>
+</nav>
+<!--/.Navbar -->

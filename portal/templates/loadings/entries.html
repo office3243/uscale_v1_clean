@@ -1,0 +1,30 @@
+{% extends "portal/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block title %}Add Entries{% endblock %}
+
+{% block content %}
+
+    <div class="col-lg-6 m-auto">
+        <div class="card">
+            <div class="card-header">
+                <h3>Add New Loading</h3>
+            </div>
+            <div class="card-body">
+                <div class="form">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ formset|crispy }}
+                        <hr><hr><hr>
+                        <input name="entries_done" type="radio"> Entries Done
+                        <br><br>
+                        <button class="btn btn-primary" type="submit">Create</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

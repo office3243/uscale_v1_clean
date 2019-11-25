@@ -1,0 +1,14 @@
+{% extends "portal/base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <br><br><br>
+    <div class="container">
+        <a href="{% url "challans:add" %}">
+            <button class="btn btn-primary">Create Challan</button>
+        </a>
+
+    </div>
+{% endblock %}
+

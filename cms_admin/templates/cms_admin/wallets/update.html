@@ -1,0 +1,41 @@
+{% extends "cms_admin/base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}Update Wallet | {{ wallet.party.name }}{% endblock %}
+
+{% block content %}
+    <div class="col-lg-6 m-auto">
+        <div class="card">
+            <div class="card-header">
+                <h3>Update Wallet | {{ wallet.party.name }}</h3>
+            </div>
+            <div class="card-body">
+                <div >
+                    <table class="table table-hover table-striped">
+                        <tr>
+                            <th>Party</th>
+                            <td>{{ wallet.party.name }}</td>
+                            <th>Balance</th>
+                            <td>{{ wallet.balance }}</td>
+                        </tr>
+                        <tr>
+                            <th>Up Limit</th>
+                            <td>{{ wallet.upper_limit }}</td>
+                            <th>Fixed Amount</th>
+                            <td>{{ wallet.fixed_amount }}</td>
+                        </tr>
+                    </table>
+                </div>
+                <hr>
+
+                <div>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <button class="btn btn-success" type="submit">Update</button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

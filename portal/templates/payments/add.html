@@ -1,0 +1,432 @@
+{% extends "portal/base.html" %}
+{% load crispy_forms_tags %}
+{% load constant_tags %}
+
+{% block title %}Create Payment{% endblock %}
+
+{% block content %}
+
+    <div class="container" style="padding: 50px 20px">
+       <div class="heading" id="heading">
+            <h3 class="text-black-50 font-weight-bold text-center">Payment | Step 4/4</h3>
+            <hr>
+        </div>
+        <div class="">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h4 class="float-left m-auto">Challan Details</h4>
+                        </div>
+                        <div class="col-lg-6">
+                            <i class="fa fa-eye-slash mt-2 float-right" id="challan_details_toggle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" id="challanDetails">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Party Code</th>
+                            <td>{{ challan.party.name }} - {{ challan.party.get_display_text }}</td>
+                            <th>Challan No</th>
+                            <td>{{ challan.challan_no }} <a href="{{ challan.get_absolute_url }}"> <i class="fa fa-eye"> </i></a></td>
+                        </tr>
+                        <tr>
+                            <th>Date</th>
+                            <td>{{ challan.created_on.date }}</td>
+                            <th>Time</th>
+                            <td>{{ challan.created_on.time }}</td>
+                        </tr>
+                        <tr>
+                            <th>Entries Done</th>
+                            <td>
+                                {% if challan.is_entries_done %}
+                                    <i class="fa fa-check text-success"></i>
+                                {% else %}
+                                    <i class="fa fa-times text-danger"></i>
+                                {% endif %}
+                            </td>
+                            <th>Reports Done</th>
+                            <td>
+                                {% if challan.is_reports_done %}
+                                    <i class="fa fa-check text-success"></i>
+                                {% else %}
+                                    <i class="fa fa-times text-danger"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        </div>
+        <br><hr>
+        <div class="card m-0">
+            <div class="card-header">
+                <h3 class="m-auto">Payment</h3>
+            </div>
+            <div class="card border" style="box-shadow: none">
+                <div class="card-header">
+                    <h4 class="m-auto">All Transactions</h4>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <th>No</th>
+                                <th>Mode</th>
+                                <th>Amount</th>
+                                <th>ACC / Wallet</th>
+                                <th>Paid On</th>
+                                <th>Status</th>
+                            </thead>
+                            {% for w_transaction in payment.wallettransaction_set.all  %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>Wallet</td>
+                                    <td>{{ w_transaction.amount }}</td>
+                                    <td>{{ w_transaction.wallet.party.get_display_text }}</td>
+                                    <td>{{ w_transaction.created_on }}</td>
+                                    <td><i class="fa fa-check text-success"></i></td>
+                                </tr>
+                            {% endfor %}
+                            {% for ac_transaction in payment.accounttransaction_set.all  %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>Account</td>
+                                    <td>{{ ac_transaction.amount }}</td>
+                                    <td>{{ ac_transaction.bank_account.bank_name }}</td>
+                                    <td>{{ ac_transaction.payed_on }}</td>
+                                    <td>
+                                        {% if ac_transaction.status == "DN" %}
+                                            <i class="fa fa-check text-success"></i>
+                                        {% else %}
+                                            <i class="fa fa-times text-danger"></i>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            {% for cs_transaction in payment.cashtransaction_set.all  %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>CASH</td>
+                                    <td>{{ cs_transaction.amount }}</td>
+                                    <td>-</td>
+                                    <td>{{ cs_transaction.created_on }}</td>
+                                    <td>
+                                        {% if cs_transaction.status == "DN" %}
+                                            <i class="fa fa-check text-success"></i>
+                                        {% else %}
+                                            <i class="fa fa-times text-danger"></i>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body" id="payment">
+                {% with challan.get_high_report_reserve_weights as reserve_weights %}
+                    {% if reserve_weights %}
+                        <div class="row">
+                            <span class="alert alert-warning btn-block text-center ">
+                                Last Report Percent was above 10% hence report reserve applied 15% on materials
+                                {% for reserve_weight in reserve_weights %}{{ reserve_weight.material.name }}, {% endfor %}
+                            </span>
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                <div class="row">
+                    <div class="col-lg-6" id="payment_form_section">
+                        <div class="card border" style="box-shadow: none">
+                            <div class="card-header">
+                                <h4 class="m-auto">Payment Methods</h4>
+                            </div>
+                            <div class="card-body">
+                                <form action="{% url "payments:add" challan_no=challan.challan_no %}" method="post">
+
+                                    {% csrf_token %}
+
+                                    <div class="cash_section">
+                                        <span>1 - General Pays</span>
+                                        <br><br>
+                                        <div class="row">
+                                            <div  class="form-group col-lg-6">
+                                                <label for="extra_charges">Kata Charges</label>
+                                                <input min="0" value="{{ payment.challan.extra_charges }}" step="1" name="extra_charges" class="form-control" id="extra_charges" type="number">
+                                            </div>
+                                            <br>
+                                            <div class="form-group col-lg-6">
+                                                <label for="round_amount">Round Amount</label>
+                                                <input min="-10" max="10" value="{{ payment.challan.round_amount }}" step="1" name="round_amount" class="form-control" id="round_amount" type="number">
+                                            </div>
+                                        </div>
+                                        <hr>
+                                    </div>
+
+                                    <div id="ac_less_section" class="row ac_less_section" style="display: none;">
+                                        <div class="form-group col-lg-6">
+                                            <label for="ac_less_amount">2 - Account Less Amount</label>
+                                            <input name="ac_less_amount" class="form-control" id="ac_less_amount" type="number">
+                                        </div>
+                                        <div class="form-group col-lg-6">
+                                            <div class="mt-4 float-right">
+                                                <span id="wallet_deduct_type" class="font-weight-bold text-primary">-</span>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    <div class="non_ac_less_section">
+                                        <div class="cash_section">
+                                            <span>3 - Cash Section</span>
+                                            <br><br>
+                                            <div style="margin-left: 20px" class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" name="is_cash" id="is_cash">
+                                                <label class="custom-control-label" for="is_cash">Do You Want Cash Transaction ? </label>
+                                            </div>
+                                            <br>
+                                            <div style="margin-left: 20px;display: none" class="form-group cash_mode_section">
+                                                <label for="cash_amount">Cash Amount</label>
+                                                <input name="cash_amount" class="form-control" id="cash_amount" type="number">
+                                            </div>
+                                            <hr>
+                                        </div>
+                                        <div class="account_section">
+                                            <div class="">
+                                            <span>4 - Account Section</span>
+                                                <a target="_blank" class="float-right" href="{{ payment.challan.party.get_bank_account_add_url }}">Add Account + </a>
+                                            </div>
+                                            <br><br>
+                                            <div style="margin-left: 20px" class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" name="is_account" id="is_account" checked>
+                                                <label class="custom-control-label" for="is_account">Do You Want Account Transaction ?</label>
+                                            </div>
+                                            <br>
+                                            <div style="margin-left: 20px" class="account_mode_section clearfix">
+                                                <div id="account_section_1">
+                                                    <div class="row">
+                                                        <div id="account_amount" class="form-group col-lg-6">
+                                                            <label for="account_amount">Account Amount</label>
+                                                            <input name="account_amount" class="form-control" id="account_amount" type="number">
+                                                            <br>
+                                                        </div>
+                                                        <div class="actr_no_section col-lg-6">
+                                                            <label for="actr_no">Payment No</label>
+                                                            <input value="{% get_actr_prefix %}" required name="actr_no" class="form-control" id="actr_no" type="text">
+                                                        </div>
+                                                    </div>
+                                                    <div class="bank_account_section">
+                                                            <label for="bank_account">Select Bank Account</label>
+                                                            <select class="form-control" name="bank_account" id="bank_account">
+                                                                {% for account in challan.party.get_bank_accounts %}
+                                                                    <option value="{{ account.id }}">{{ account.get_display_text }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                    </div>
+                                    <button id="submit_btn" class="btn btn-primary btn-lg float-right" type="submit">Done</button>
+                                    <br>
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div style="box-shadow: none" class="border card m-0 p-0" id="payment_details_section">
+                             <div class="card-header">
+                                <h5 class="m-auto">Payment Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table">
+                                    <tr>
+                                        <th>Weights Amount</th>
+                                        <td>{{ payment.challan.weights_amount }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Extra Charges</th>
+                                        <td>{{ payment.challan.extra_charges }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Round Amount</th>
+                                        <td>{{ payment.challan.round_amount }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Total Amount</th>
+                                        <td>{{ payment.amount }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Paid Amount</th>
+                                        <td>{{ payment.payed_amount }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Amount To Pay</th>
+                                        <td>{{ payment.get_remaining_amount }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Wallet Deduct Amount</th>
+                                        <td id="wallet_deduct_amount">-</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Non Wallet Amount</th>
+                                        <td id="non_wallet_amount">-</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        {% if wallet %}
+                            <br><hr>
+                            <div style="box-shadow: none" class="card border" id="wallet_details">
+                            <div class="card-header">
+                                <h5 class="m-auto">Wallet</h5>
+                            </div>
+                            <div class="card-body">
+                                <table class="table">
+                                    <tr>
+                                        <th>Wallet Balance</th>
+                                        <td>{{ wallet.balance }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Deduct Type</th>
+                                        <td>{{ wallet.get_deduct_type_display }}</td>
+                                    </tr>
+                                    {% if wallet.deduct_type == "FXD" %}
+                                        <tr>
+                                            <th>Fixed Amount</th>
+                                            <td>{{ wallet.fixed_amount }}</td>
+                                        </tr>
+                                    {% endif %}
+                                    <tr>
+                                        <th>Last Transaction</th>
+                                        <td>{{ wallet.wallettransaction_set.last.amount|default:"-" }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+
+
+        $("#challan_details_toggle").on("click", function () {
+            $("#challanDetails").toggle();
+            $(this).toggleClass("fa-eye fa-eye-slash");
+        });
+
+
+        let total_amount = {{ payment.amount }};
+        let amount_to_pay = {{ payment.get_remaining_amount }};
+        let total_pay = 0.00;
+        let wallet_pay = false;
+        let wallet_payable_amount = 0;
+        let non_wallet_amount = 0;
+        {% if wallet %}
+            wallet_pay = true;
+            wallet_payable_amount = {% if wallet_payable_amount > 0 %}{{ wallet_payable_amount }}{% else %}0{% endif %};
+            let wallet_deduct_type = "{{ wallet.deduct_type }}";
+            non_wallet_amount = {{ non_wallet_amount }};
+            let only_wallet_pay = false;
+            if (non_wallet_amount < 0.1){
+                only_wallet_pay = true;
+            }
+        {% else %}
+            non_wallet_amount = amount_to_pay;
+        {% endif %}
+
+        function allow_submit(b){
+            if (b){
+                $("#submit_btn").removeClass("disabled btn-danger").addClass("btn-success");
+            }
+            else {
+                $("#submit_btn").removeClass("btn-success").addClass("disabled btn-danger");
+            }
+        }
+
+        $("#is_cash").on("change", function () {
+           if ($(this).prop("checked") === false){
+               $(".cash_mode_section").hide();
+           }
+           else{
+               $(".cash_mode_section").show();
+           }
+        });
+
+        $("#is_account").on("change", function () {
+           if ($(this).prop("checked") === false){
+               $(".account_mode_section").hide();
+           }
+           else{
+               $(".account_mode_section").show();
+           }
+        });
+
+        $("#payment_mode").on("change", function () {
+            if ($(this).val() === "DP"){
+                $(".ac_less_section").hide();
+            }
+            else{
+                $(".ac_less_section").show();
+            }
+
+        });
+
+        function assign_ac_less_deduct_type(){
+            if (total_amount > wallet_payable_amount || wallet_deduct_type !== "FD"){
+                if (total_amount > wallet_payable_amount){
+                  $("#full_deduct").attr("disabled", "disabled").addClass("bg-danger");
+                }
+                $("#ac_less_deduct_type").val("PD").change();
+            }
+            else {
+                $("#ac_less_deduct_type").val("FD").change();
+            }
+        }
+
+        function submitForm(){
+            let a = 8;
+        }
+
+        $(function () {
+            // Party is a Wallet Party
+            if (wallet_pay){
+                $("#payment_mode").val("AL").change();
+                $("#wallet_deduct_type").text("{{ wallet.get_deduct_type_display }}");
+                $("#ac_less_section").show();
+                if (only_wallet_pay){
+                    $(".non_ac_less_section").hide();
+                }
+                if (wallet_deduct_type === "FD" || wallet_deduct_type === "FXD"){
+                    $("#ac_less_amount").val(wallet_payable_amount).attr("readonly", "readonly").addClass("bg-light disabled");
+                }
+                else {
+                    $("#ac_less_amount").val(wallet_payable_amount);
+                }
+            }
+            // Party is not a Wallet Party
+            else {
+                $("#payment_mode").val("DP").change();
+                $("#ac_less_payment").attr("disabled", "disabled").addClass("bg-light disabled");
+                $(".ac_less_section").hide();
+            }
+            $("#non_wallet_amount").text(non_wallet_amount);
+            $("#wallet_deduct_amount").text(wallet_payable_amount);
+            {#assign_ac_less_deduct_type();#}
+        });
+
+
+
+
+    </script>
+
+
+{% endblock %}

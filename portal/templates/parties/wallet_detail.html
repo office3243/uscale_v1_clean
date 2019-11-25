@@ -1,0 +1,96 @@
+{% extends "portal/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Wallet Details | {{ Wallet.Wallet_code }}{% endblock %}
+
+{% block content %}
+
+    <br><br><br>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-lg-12 m-auto">
+                        <h3 class="m-auto">Wallet Details | {{ wallet.party.get_display_text }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Party</th>
+                            <td>{{ wallet.party.get_display_text }}</td>
+                            <th>Balance</th>
+                            <td>{{ wallet.balance }}</td>
+                        </tr>
+                        <tr>
+                            <th>Deduct Type</th>
+                            <td>{{ wallet.get_deduct_type_display }}{% if wallet.deduct_type == "FXD" %} ({{ wallet.fixed_amount }}){% endif %}</td>
+                            <th>Limit</th>
+                            <td>{{ wallet.upper_limit }}</td>
+                         </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td colspan="3">
+                                {% if wallet.is_active %}
+                                    <i class="fa fa-check text-success"></i>
+                                {% else %}
+                                    <i class="fa fa-times text-danger"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+                <hr>
+                <div class="card border" style="box-shadow: none">
+                    <div class="card-header">
+                        <h4 class="m-auto">Wallet History</h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped">
+                                <thead>
+                                    <th>Date</th>
+                                    <th>Opening Balance</th>
+                                    <th>Challan No</th>
+                                    <th>Deduct Amount</th>
+                                    <th>New Advance</th>
+                                    <th>Remaining Balance</th>
+                                </thead>
+                                <tbody>
+                                    {% for wallet_tr in wallet.wallettransaction_set.all|dictsortreversed:"id" %}
+                                        <tr class="row-success">
+                                            <td>{{ wallet_tr.created_on|date:"d/m/Y" }}</td>
+                                            <td>{{ wallet_tr.previous_balance }}</td>
+                                            <td>{{ wallet_tr.payment.challan.challan_no }}</td>
+                                            <td>{{ wallet_tr.amount }}</td>
+                                            <td>-</td>
+                                            <td>{{ wallet_tr.remaining_balance }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    {% for wa in wallet.walletadvance_set.all|dictsortreversed:"id" %}
+                                        <tr class="bg-success">
+                                            <td>{{ wa.created_on|date:"d/m/Y" }}</td>
+                                            <td>{{ wa.previous_balance }}</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>{{ wa.amount }}</td>
+                                            <td>{{ wa.remaining_balance }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                    </div>
+                </div>
+                <div class="row">
+                    <a href="{{ Wallet.get_update_url }}" class="m-auto"><button class="btn btn-primary">Update</button></a>
+                </div>
+            </div>
+            <div class="card-footer">
+                {% include "portal/goback_btn.html" %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "portal/base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+    <div class="jumbotron container">
+        <div>
+            <h4>Form 1</h4>
+            <form id="form1" method="post" action="{% url "portal:temp_form_test" %}">
+                {% csrf_token %}
+                <input name="fm1">
+                <input value="submit form 1" type="submit">
+            </form>
+        </div>
+        <div>
+            <h4>Form 2</h4>
+            <form id="form2" method="post" action="{% url "portal:temp_form_test" %}">
+                {% csrf_token %}
+                <input name="fm2">
+                <input value="submit form 2" type="submit">
+            </form>
+        </div>
+
+        <button type="button" onclick="submitForms();">Submit Forms</button>
+
+    </div>
+
+    <script>
+        submitForms = function(){
+            document.getElementById("form1").submit();
+            document.getElementById("form2").submit();
+        }
+    </script>
+
+{% endblock %}
+

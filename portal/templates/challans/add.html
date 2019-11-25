@@ -1,0 +1,53 @@
+{% extends "portal/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create Challan{% endblock %}
+
+{% block content %}
+    <br><br>
+    <div class="container col-lg-6 m-auto">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="m-auto">Create New Challan</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+
+                    <div class="row">
+                        <div class="float-left col-lg-6">
+                            <button type="button" class="btn btn-indigo" onclick="goBack()"><i class="fa fa-arrow-left"></i> Go Back</button>
+                        </div>
+                        <div class="col-lg-6 float-right">
+                            <div class="float-right">
+                                <button class="btn btn-danger" type="reset">Reset</button>
+                                <button class="btn btn-primary" type="submit">Create</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block custom_script %}
+
+    <script>
+        function assignPTID() {
+            let url_string = window.location.href;
+            let url = new URL(url_string);
+            let ptid = url.searchParams.get("ptid");
+            if (ptid){
+                $("#id_party").val(ptid);
+            }
+
+        }
+
+        // Onlaod All Functions to be called from here
+        $(function () {
+            assignPTID();
+        });
+    </script>
+{% endblock %}

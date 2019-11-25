@@ -1,0 +1,16 @@
+{% extends "portal/base.html" %}
+{#{% load crispy_forms_tags %}#}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+    <br>
+    <div class="jumbotron container">
+        <h3 class="text-black-50 font-weight-bold text-center">Create New Account</h3><hr>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input class="btn btn-default" type="submit" value="Register">
+        </form>
+    </div>
+{% endblock %}

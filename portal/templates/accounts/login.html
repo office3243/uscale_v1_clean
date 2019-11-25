@@ -1,0 +1,65 @@
+{% extends "portal/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Login{% endblock %}
+
+{% block custom_head %}
+{% endblock %}
+
+{% block content %}
+
+    <br><br><br>
+        <div class="col-lg-4 m-auto">
+         <div class="card">
+            <div class="card-header bg-primary">
+                <h4 class="m-auto text-white font-weight-bold">Login</h4>
+            </div>
+            <div class="card-body p-5">
+                <form class="text-center" method="post" action="{% url "accounts:login" %}">
+                    {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    <span class="text-danger btn alert-danger">{{ error }}</span>
+                {% endfor %}
+            {% endif %}
+
+            <div class="form-group">
+                <input name="username" type="text" id="defaultLoginFormEmail" class="form-control mb-4" placeholder="Username">
+                <p class="text-danger">{{ form.username.help_text }}</p>
+                {% if form.username.errors %}
+                    {% for error in form.username.errors %}
+                        <span class="alert alert-danger">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+
+            </div>
+
+            <div class="form-group">
+                <input name="password" type="password" id="defaultLoginFormPassword" class="form-control mb-4" placeholder="Password">
+                <p class="text-danger">{{ form.password.help_text }}</p>
+                {% if form.password.errors %}
+                    {% for error in form.password.errors %}
+                        <span class="alert alert-danger">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+                    <div class="d-flex justify-content-around">
+                        <div>
+                            <!-- Forgot password -->
+                            <a href="">Forgot password?</a>
+                        </div>
+                    </div>
+
+                    <!-- Sign in button -->
+                    <button class="btn btn-primary btn-block my-4" type="submit">Sign in</button>
+                </form>
+             <p class="font-weight-bold m-auto text-center text-black-50">U-Scale Challan System</p>
+            </div>
+         </div>
+    </div>
+
+{% endblock %}
+{% block custom_script %}
+{% endblock %}

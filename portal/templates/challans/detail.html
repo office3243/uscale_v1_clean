@@ -1,0 +1,230 @@
+{% extends "portal/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Challan {{ challan.challan_no }}{% endblock %}
+
+{% block content %}
+    <br><br>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-black-50 font-weight-bold text-center">Challan Details | {{ challan.challan_no   }}</h3>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>Party Code</th>
+                            <td>{{ challan.party.name }} - {{ challan.party.get_display_text }}</td>
+                            <th>Challan No</th>
+                            <td>{{ challan.challan_no }}</td>
+                        </tr>
+                        <tr>
+                            <th>Date Time</th>
+                            <td>{{ challan.created_on.date }} - {{ challan.created_on.time }}</td>
+                            <th>Created By</th>
+                            <td>{{ challan.created_by }}</td>
+                        </tr>
+                        <tr>
+                            <th>Weights Amount</th>
+                            <td>{{ challan.weights_amount }}</td>
+                            <th>Kata Charges</th>
+                            <td>{{ challan.extra_charges }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Amount</th>
+                            <td>{{ challan.total_amount }}</td>
+                            <th>Amount Payed</th>
+                            <td>{{ challan.payment.payed_amount }}</td>
+                        </tr>
+                        <tr>
+                            <th>Remaining Amount</th>
+                            <td>{{ challan.payment.get_remaining_amount }}</td>
+                            <th>Amount On Hold</th>
+                            <td>{{ challan.payment.calculate_payed_amount_pending }}</td>
+                        </tr>
+                        <tr>
+                            <th>Entries Done</th>
+                            <td>
+                                {% if challan.is_entries_done %}
+                                    <i class="fa fa-lg text-success fa-check"></i>
+                                {% else %}
+                                    <a href="{{ challan.get_entries_url }}"><button class="btn btn-primary btn-sm">Goto Entries</button></a>
+                                {% endif %}
+                            </td>
+                            <th>Reports Done</th>
+                            <td>
+                                {% if challan.is_reports_done %}
+                                    <i class="fa fa-lg text-success fa-check"></i>
+                                {% else %}
+                                    <a href="{{ challan.get_assign_reports_url }}"><button class="btn btn-primary btn-sm">Goto Reports</button></a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Payment Done</th>
+                            <td>
+                                {% if challan.is_payed %}
+                                    <i class="fa fa-lg text-success fa-check"></i>
+                                {% else %}
+                                    {% if challan.is_entries_done %}
+                                        {% if challan.is_rates_assigned %}
+                                            <a href="{{ challan.get_payment_add_url }}"><button class="btn btn-primary btn-sm">Goto Payment</button></a>
+                                        {% else %}
+                                            <a href="{{ challan.get_assign_rates_url }}"><button class="btn btn-primary btn-sm">Goto Rates</button></a>
+                                        {% endif %}
+                                    {% else %}
+                                        Complete Entries First
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <th>Total Done</th>
+                            <td>
+                                {% if challan.status == "DN" %}
+                                    <i class="fa fa-lg text-success fa-check"></i>
+                                {% else %}
+                                    <i class="fa fa-lg text-danger fa-times"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <br><hr>
+                {% if challan.weight_set.exists %}
+                    <div>
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <h4 class="float-left m-auto">Weight Entries</h4>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <i class="fa fa-eye mt-2 float-right" id="entries_toggle"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: none" class="card-body" id="entries">
+                                <div class="table-responsive  text-nowrap">
+                                    <table class="table table-bordered table-hover">
+                                        <tbody id="tb">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    <br>
+                    <hr>
+                    </div>
+                {% endif %}
+
+                {% include "portal/goback_btn.html" %}
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block custom_script %}
+    <script>
+        $("#entries_toggle").on("click", function () {
+            $("#entries").toggle();
+            $(this).toggleClass("fa-eye fa-eye-slash");
+        });
+
+        function assignEntriesTable() {
+
+            let weightList = [
+                                {% for weight in challan.weight_set.all %}
+                                    [
+                                        "{{ weight.material.get_display_text }}",
+                                        {% for weight_entry in weight.weightentry_set.all %}{{ weight_entry.entry }},{% endfor %}
+{#                                        {{ weight.reportweight.weight_count|default:'a' }},#}
+                                        {% if weight.reportweight %}
+                                            {{ weight.reportweight.weight_count }}
+                                        {% else %}
+                                            "-"
+                                        {% endif %},
+                                        {{ weight.total_weight }},
+                                        {{ weight.rate_per_unit }},
+                                        {{ weight.amount }},
+                                    ],
+                                {% endfor %}
+                            ];
+
+
+            let max_length=1;
+
+            for(let i=0;i<weightList.length;i++)
+            {
+                if(max_length < weightList[i].length)
+                {
+                    max_length = weightList[i].length;
+                }
+            }
+            for(let j=0,l=4;j<max_length;j++){
+               let tr = document.createElement("tr");
+               let th = document.createElement("th");
+               let thStr;
+               if(j<max_length-4){
+                   // for Table Header Vertical
+                   if (j===0){
+                       thStr = "Materials"
+                   }
+                   else{
+                       thStr = (j).toString();
+                   }
+                   let thxt = document.createTextNode(thStr);
+                   th.appendChild(thxt);
+                   tr.appendChild(th);
+                    for(let i=0;i<weightList.length;i++){
+                        let td = document.createElement("td");
+                        let txt;
+                        if (j===0){
+                            td.classList.add("tableMaterialHead");
+                        }
+                        if(j< weightList[i].length-4){
+                            txt= document.createTextNode(weightList[i][j]);
+                        }else{
+                            txt = document.createTextNode("");
+                        }
+                        td.appendChild(txt);
+                        tr.appendChild(td);
+                    }
+                }else{
+                   if (j === (max_length-1)){
+                       thStr = "AMOUNT"
+                   }
+                   else if (j === (max_length-2)){
+                       thStr = "RATE"
+                   }
+                   else if (j === (max_length-3)){
+                       thStr = "TOTAL"
+                   }
+                   else if (j === (max_length-4)){
+                       thStr = "REPORT"
+                   }
+                   let thxt = document.createTextNode(thStr);
+                   th.appendChild(thxt);
+                   tr.appendChild(th);
+                    for(let i=0;i<weightList.length;i++){
+                        let len = weightList[i].length;
+                        let td = document.createElement("td");
+                        let txt = document.createTextNode(weightList[i][len-l]);
+                        td.appendChild(txt);
+                        tr.appendChild(td);
+                    }
+                    l--
+                }
+               document.querySelector('#tb').appendChild(tr);
+            }
+        }
+
+        // Onlaod All Functions to be called from here
+        $(function () {
+            {% if challan.weight_set.exists %}
+                assignEntriesTable();
+            {% endif %}
+        });
+
+    </script>
+{% endblock %}
