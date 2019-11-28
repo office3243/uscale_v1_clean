@@ -25,7 +25,7 @@ class InPayment(models.Model):
     wallet_advance = models.OneToOneField("parties.WalletAdvance", on_delete=models.SET_NULL, blank=True, null=True)
     payment = models.ForeignKey("Payment", on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=6, decimal_places=2)
-    created_on = models.DateField(default=timezone.now)
+    payed_on = models.DateField(blank=True, null=True)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default="DN")
 
     def __str__(self):
@@ -61,8 +61,8 @@ class AccountTransaction(models.Model):
     bank_account = models.ForeignKey("bank_accounts.BankAccount", on_delete=models.CASCADE, blank=True, null=True)
     payment_party = models.ForeignKey("payment_parties.PaymentParty", on_delete=models.SET_NULL, blank=True, null=True)
     amount = models.DecimalField(max_digits=9, decimal_places=2)
-    created_on = models.DateField(default=timezone.now)
-    payed_on = models.DateField(default=timezone.now)
+    created_on = models.DateField()
+    payed_on = models.DateField(blank=True, null=True)
     extra_info = models.TextField(blank=True)
     photo = models.ImageField(upload_to="payments/account_transactions/photos/", blank=True, null=True)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default="PN")
@@ -78,7 +78,7 @@ class AccountTransaction(models.Model):
 
 
 def generate_ac_tr_payment_code(ac_tr):
-    return "{}-{}".format(settings.BRANCH_AC_PAYMENT_PREFIX, ac_tr.id)
+    return "{}-{}".format(settings.ACTR_NO_PREFIX, ac_tr.id)
 
 
 def assign_ac_tr_payment_code(sender, instance, *args, **kwargs):
@@ -111,8 +111,7 @@ class CashTransaction(models.Model):
 
     payment = models.ForeignKey("Payment", on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=9, decimal_places=2)
-    created_on = models.DateField(default=timezone.now)
-    payed_on = models.DateTimeField(blank=True, null=True)
+    payed_on = models.DateField(blank=True, null=True)
     extra_info = models.TextField(blank=True)
     photo = models.ImageField(upload_to="payments/account_transactions/photos/", blank=True, null=True)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default="DN")
@@ -130,7 +129,7 @@ class WalletTransaction(models.Model):
     payment = models.ForeignKey("Payment", on_delete=models.CASCADE)
     wallet = models.ForeignKey("parties.Wallet", on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=9, decimal_places=2, default=Decimal(0.00))
-    created_on = models.DateField(default=timezone.now)
+    payed_on = models.DateField(blank=True, null=True)
     deducted_amount = models.DecimalField(max_digits=9, decimal_places=2, default=Decimal(0.00))
 
     previous_balance = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
@@ -185,17 +184,15 @@ class Payment(models.Model):
     status = models.CharField(max_length=2, choices=PAYMENT_STATUS_CHOICES, default="PN")
     payed_amount = models.DecimalField(max_digits=9, decimal_places=2, default=0.00)
     amount = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
-    payed_on = models.DateTimeField(blank=True, null=True)
     image = models.ImageField(upload_to="payments/", blank=True, null=True)
     extra_info = models.TextField(blank=True)
-    created_on = models.DateField(default=timezone.now)
 
     def __str__(self):
         return "{} - {} ({}) - ".format(self.challan.party.get_display_text, self.amount, self.get_status_display())
 
     @property
     def get_date_display(self):
-        return self.created_on.strftime("%d/%m/%Y")
+        return "-"
 
     @property
     def calculate_payed_amount(self):
@@ -313,8 +310,6 @@ def refresh_challan(sender, instance, *args, **kwargs):
 def clean_payment(sender, instance, *agrs, **kwargs):
     print("Full Clean")
     instance.full_clean()
-
-
 
 post_save.connect(assign_payment_mode, sender=Payment)
 post_save.connect(assign_amount, sender=Payment)

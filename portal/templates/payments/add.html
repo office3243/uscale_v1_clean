@@ -76,7 +76,7 @@
                                 <th>Mode</th>
                                 <th>Amount</th>
                                 <th>ACC / Wallet</th>
-                                <th>Paid On</th>
+                                <th>Created On</th>
                                 <th>Status</th>
                             </thead>
                             {% for w_transaction in payment.wallettransaction_set.all  %}
@@ -85,7 +85,7 @@
                                     <td>Wallet</td>
                                     <td>{{ w_transaction.amount }}</td>
                                     <td>{{ w_transaction.wallet.party.get_display_text }}</td>
-                                    <td>{{ w_transaction.created_on }}</td>
+                                    <td>{{ w_transaction.payed_on }}</td>
                                     <td><i class="fa fa-check text-success"></i></td>
                                 </tr>
                             {% endfor %}
@@ -111,7 +111,7 @@
                                     <td>CASH</td>
                                     <td>{{ cs_transaction.amount }}</td>
                                     <td>-</td>
-                                    <td>{{ cs_transaction.created_on }}</td>
+                                    <td>{{ cs_transaction.payed_on }}</td>
                                     <td>
                                         {% if cs_transaction.status == "DN" %}
                                             <i class="fa fa-check text-success"></i>
@@ -217,14 +217,20 @@
                                                             <input value="{% get_actr_prefix %}" required name="actr_no" class="form-control" id="actr_no" type="text">
                                                         </div>
                                                     </div>
-                                                    <div class="bank_account_section">
-                                                            <label for="bank_account">Select Bank Account</label>
+                                                    <div class="row">
+                                                        <div class="bank_account_section col-lg-7">
+                                                            <label for="bank_account">Bank Account</label>
                                                             <select class="form-control" name="bank_account" id="bank_account">
                                                                 {% for account in challan.party.get_bank_accounts %}
                                                                     <option value="{{ account.id }}">{{ account.get_display_text }}</option>
                                                                 {% endfor %}
                                                             </select>
                                                         </div>
+                                                        <div class="form-group col-lg-5">
+                                                            <label for="ac_payment_date">Date</label>
+                                                            <input class="form-control" id="ac_payment_date" name="ac_payment_date" type="date" value="dd/11/2019">
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

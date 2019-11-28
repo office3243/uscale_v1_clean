@@ -12,7 +12,7 @@ class ChallanAdmin(admin.ModelAdmin):
     list_display = ("challan_no", "party", "total_amount", "created_on", "is_entries_done", "is_reports_done", "is_payed",  "status")
     list_filter = ("party", "created_on", "status")
     inlines = [WeightInline, ]
-    readonly_fields = ("created_on", "updated_on")
+    list_editable = ("created_on", )
 
 
 class WeightAdmin(admin.ModelAdmin):

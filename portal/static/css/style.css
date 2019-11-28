@@ -3,3 +3,7 @@
     border-bottom: 2px solid lightgray;
     border-radius: 0;
 }
+
+.btn:hover, .btn:focus{
+    box-shadow: 0 0 20px black;
+}

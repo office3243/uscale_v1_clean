@@ -48,8 +48,7 @@ class ReportWeight(models.Model):
     report_type = models.CharField(max_length=2, choices=REPORT_TYPE_CHOICES)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default="PN")
 
-    reported_on = models.DateTimeField(blank=True, null=True)
-    updated_on = models.DateTimeField(auto_now=True)
+    reported_on = models.DateField(blank=True, null=True)
 
     def __str__(self):
         return "{} - {} - {}".format(self.weight.material.name, self.weight_count, self.get_report_type_display())
@@ -84,7 +83,6 @@ class Weight(models.Model):
     total_weight = models.FloatField(validators=[MinValueValidator(0.00)], default=0.00)
     rate_per_unit = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     amount = models.DecimalField(max_digits=9, decimal_places=2, default=0.00)
-    updated_on = models.DateTimeField(auto_now=True)
 
     stock_weight = models.FloatField(validators=[MinValueValidator(0.00)], default=0.00)
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default="PN")
@@ -262,8 +260,8 @@ class Challan(models.Model):
     total_amount = models.DecimalField(max_digits=9, decimal_places=2, default=decimal.Decimal(0.00), validators=[MinValueValidator(limit_value=0)])
     image = models.ImageField(upload_to="payments/", blank=True, null=True)
     extra_info = models.TextField(blank=True)
-    created_on = models.DateTimeField(auto_now_add=True, editable=True)
-    updated_on = models.DateTimeField(auto_now=True, editable=True)
+    created_on = models.DateField(verbose_name="Challan Date")
+    updated_on = models.DateTimeField(auto_now=True)
 
     is_entries_done = models.BooleanField(default=False)
     is_reports_done = models.BooleanField(default=False)
@@ -284,7 +282,7 @@ class Challan(models.Model):
 
     @property
     def get_date_display(self):
-        return self.created_on.strftime("%d/%m/%y")
+        return self.created_on.strftime("%d/%m/%y") or "-"
 
     @property
     def get_paying_amount(self):
@@ -343,7 +341,7 @@ class Challan(models.Model):
 
     @property
     def get_recent_weight_entry(self):
-        return self.weight_set.latest("updated_on").get_recent_entry or None
+        return self.weight_set.latest("id").get_recent_entry or None
 
     @property
     def get_payable_amount(self):

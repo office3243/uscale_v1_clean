@@ -20,7 +20,7 @@ class ChallanAddView(LoginRequiredMixin, CreateView):
 
     model = Challan
     template_name = "challans/add.html"
-    fields = ("party", "vehicle_details", "extra_info", "challan_no")
+    fields = ("party", "vehicle_details", "extra_info", "challan_no", "created_on")
     success_url = reverse_lazy("challans:list")
 
     def form_valid(self, form):
@@ -41,7 +41,7 @@ class ChallanListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        return qs.filter(Q(status="PN") | Q(created_on__date__gte=datetime.date.today()+datetime.timedelta(days=-30)))
+        return qs.filter(Q(status="PN") | Q(created_on__gte=datetime.date.today()+datetime.timedelta(days=-30)))
 
 
 class ChallanEntriesView(LoginRequiredMixin, DetailView):

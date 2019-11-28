@@ -1,5 +1,6 @@
 {% extends "portal/base.html" %}
 {% load crispy_forms_tags %}
+{% load widget_tweaks %}
 
 {% block title %}Create Challan{% endblock %}
 
@@ -13,7 +14,28 @@
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
-                    {{ form|crispy }}
+{#                    {{ form|crispy }}#}
+
+
+                    <div class="row">
+                        <div class="form-group col-lg-6">
+                            {{ form.party|as_crispy_field }}
+                        </div>
+                        <div class="form-group col-lg-6">
+                            {{ form.vehicle_details|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group col-lg-6">
+                            {{ form.challan_no|as_crispy_field }}
+                        </div>
+                        <div class="form-group col-lg-6">
+                            {{ form.created_on|attr:"type:date"|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    {{ form.extra_info|as_crispy_field }}
 
                     <div class="row">
                         <div class="float-left col-lg-6">
@@ -35,6 +57,7 @@
 {% block custom_script %}
 
     <script>
+
         function assignPTID() {
             let url_string = window.location.href;
             let url = new URL(url_string);
@@ -47,6 +70,7 @@
 
         // Onlaod All Functions to be called from here
         $(function () {
+            {#$("#id_created_on").datepicker();#}
             assignPTID();
         });
     </script>

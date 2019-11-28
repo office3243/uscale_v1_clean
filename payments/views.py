@@ -117,9 +117,10 @@ def add(request, challan_no):
             cash_transaction = CashTransaction.objects.create(payment=payment, amount=cash_amount, payed_on=timezone.now(), status="DN")
         if account_amount_1:
             bank_account_id_1 = (request.POST.get('bank_account') or None)
+            ac_payment_date = (request.POST.get('ac_payment_date') or None)
             bank_account_1 = get_object_or_404(BankAccount, id=bank_account_id_1, party=party)
             account_transaction_1 = AccountTransaction.objects.create(payment=payment, amount=account_amount_1,
-                                                                      bank_account=bank_account_1, actr_no=actr_no)
+                                                                      bank_account=bank_account_1, actr_no=actr_no, created_on=ac_payment_date)
         if wallet is not None and ac_less_amount:
             wallet_transaction, created = WalletTransaction.objects.get_or_create(payment=payment, wallet=wallet)
             print(created, "--------------------------------------")

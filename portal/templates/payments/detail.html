@@ -63,7 +63,7 @@
                                     <td>Wallet</td>
                                     <td>{{ w_transaction.amount }}</td>
                                     <td>{{ w_transaction.wallet.party.get_display_text }}</td>
-                                    <td>{{ w_transaction.created_on }}</td>
+                                    <td>{{ w_transaction.payed_on }}</td>
                                     <td><i class="fa fa-check text-success"></i></td>
                                 </tr>
                             {% endfor %}
@@ -89,7 +89,7 @@
                                     <td>CASH</td>
                                     <td>{{ cs_transaction.amount }}</td>
                                     <td>-</td>
-                                    <td>{{ cs_transaction.created_on }}</td>
+                                    <td>{{ cs_transaction.payed_on }}</td>
                                     <td>
                                         {% if cs_transaction.status == "DN" %}
                                             <i class="fa fa-check text-success"></i>

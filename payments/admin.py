@@ -7,10 +7,9 @@ admin.site.register(InPayment)
 
 class PaymentAdmin(admin.ModelAdmin):
 
-    list_display = ("challan", "payment_mode", "amount", "payed_amount", "status", "created_on")
+    list_display = ("challan", "payment_mode", "amount", "payed_amount", "status")
     list_display_links = ("challan", )
-    list_filter = ("payment_mode", "challan__party", "status")
-    list_editable = ("created_on", )
+    list_filter = ("payment_mode", "challan__party", "status", "challan__created_on")
 
 
 admin.site.register(Payment, PaymentAdmin)
@@ -38,9 +37,9 @@ admin.site.register(CashTransaction, CashTransactionAdmin)
 
 class WalletTransactionAdmin(admin.ModelAdmin):
 
-    list_display = ("amount", "created_on")
-    list_filter = ("wallet__deduct_type", "payment__challan__party", "created_on")
-    list_editable = ("created_on", )
+    list_display = ("amount", "payed_on")
+    list_filter = ("wallet__deduct_type", "payment__challan__party", "payed_on")
+    list_editable = ("payed_on", )
 
 
 admin.site.register(WalletTransaction, WalletTransactionAdmin)

@@ -20,7 +20,7 @@ class BankAccount(models.Model):
 
     @property
     def get_display_text(self):
-        return "{} - {} - {}".format(self.party.get_display_text, self.bank_name, self.acc_no[-5:])
+        return "{} - {} - {}".format(self.account_holder, self.bank_name, self.acc_no[-5:])
 
     @property
     def get_tr_amount(self):

@@ -61,7 +61,7 @@
                                 <tbody>
                                     {% for wallet_tr in wallet.wallettransaction_set.all|dictsortreversed:"id" %}
                                         <tr class="row-success">
-                                            <td>{{ wallet_tr.created_on|date:"d/m/Y" }}</td>
+                                            <td>{{ wallet_tr.payed_on|date:"d/m/Y" }}</td>
                                             <td>{{ wallet_tr.previous_balance }}</td>
                                             <td>{{ wallet_tr.payment.challan.challan_no }}</td>
                                             <td>{{ wallet_tr.amount }}</td>
@@ -71,7 +71,7 @@
                                     {% endfor %}
                                     {% for wa in wallet.walletadvance_set.all|dictsortreversed:"id" %}
                                         <tr class="bg-success">
-                                            <td>{{ wa.created_on|date:"d/m/Y" }}</td>
+                                            <td>{{ wa.payed_on|date:"d/m/Y" }}</td>
                                             <td>{{ wa.previous_balance }}</td>
                                             <td>-</td>
                                             <td>-</td>

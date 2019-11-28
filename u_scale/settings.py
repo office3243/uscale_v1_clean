@@ -20,6 +20,7 @@ INSTALLED_APPS = [
 
 
     'crispy_forms',
+    'widget_tweaks',
 
     'cms_admin',
     'portal',
@@ -115,8 +116,8 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 SITE_DOMAIN = "127.0.0.1:8000"
 
-BRANCH_ID = "WG"
-BRANCH_NAME = "Wagoli"
+BRANCH_ID = "DP"
+BRANCH_NAME = "Dapodi"
 ACTR_NO_PREFIX = BRANCH_ID + "P"
 PARTY_CODE_PREFIX = BRANCH_ID + "PR"
 CHALLAN_NO_PREFIX = BRANCH_ID + "CH"
