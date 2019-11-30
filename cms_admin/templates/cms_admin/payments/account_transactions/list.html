@@ -21,6 +21,7 @@
                      <table id="dt-basic-checkbox" class="table table-striped table-bordered" cellspacing="0" width="100%">
                          <thead class="thead-light">
                             <th style="width: 30px">NO</th>
+                            <th>Date</th>
                             <th>Challan</th>
                             <th>Party</th>
                             <th>DPP No</th>
@@ -38,7 +39,8 @@
                                  {% for account_transaction in account_transactions %}
                                      <tr>
                                         <td>{{ forloop.counter }}</td>
-                                         <td>{{ account_transaction.payment.challan.challan_no }}</td>
+                                        <td>{{ account_transaction.created_on }}</td>
+                                        <td>{{ account_transaction.payment.challan.challan_no }}</td>
                                         <td>{{ account_transaction.bank_account.party }}</td>
                                         <td>{{ account_transaction.actr_no }}</td>
                                         <td>{{ account_transaction.amount }}</td>

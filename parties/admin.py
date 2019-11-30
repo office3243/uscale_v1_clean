@@ -18,9 +18,9 @@ class WalletAdmin(admin.ModelAdmin):
 
 class WalletAdvanceAdmin(admin.ModelAdmin):
 
-    list_display = ("wallet", "amount", "created_on")
-    list_filter = ("wallet", "amount", "created_on")
-    list_editable = ("created_on", )
+    list_display = ("wallet", "amount", "payed_on")
+    list_filter = ("wallet", "amount", "payed_on")
+    list_editable = ("payed_on", )
 
 
 admin.site.register(Party, PartyAdmin)

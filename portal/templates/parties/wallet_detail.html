@@ -1,4 +1,5 @@
 {% extends "portal/base.html" %}
+{% load static %}
 {% load crispy_forms_tags %}
 
 {% block title %}Wallet Details | {{ Wallet.Wallet_code }}{% endblock %}
@@ -49,7 +50,7 @@
                         <h4 class="m-auto">Wallet History</h4>
                     </div>
                     <div class="card-body">
-                        <table class="table table-striped">
+                        <table id="wellet_history_table" class="table table-striped">
                                 <thead>
                                     <th>Date</th>
                                     <th>Opening Balance</th>
@@ -59,24 +60,24 @@
                                     <th>Remaining Balance</th>
                                 </thead>
                                 <tbody>
+                                    {% for wa in wallet.walletadvance_set.all|dictsortreversed:"id" %}
+                                        <tr style="background-color: #b3ffb3">
+                                            <td>{{ wa.payed_on }}</td>
+                                            <td>{{ wa.opening_balance }}</td>
+                                            <td>-</td>
+                                            <td>-</td>
+                                            <td>{{ wa.amount }}</td>
+                                            <td>{{ wa.remaining_balance }}</td>
+                                        </tr>
+                                    {% endfor %}
                                     {% for wallet_tr in wallet.wallettransaction_set.all|dictsortreversed:"id" %}
-                                        <tr class="row-success">
-                                            <td>{{ wallet_tr.payed_on|date:"d/m/Y" }}</td>
+                                        <tr style="background-color: #ffc2b3">
+                                            <td>{{ wallet_tr.payment.challan.created_on }}</td>
                                             <td>{{ wallet_tr.previous_balance }}</td>
                                             <td>{{ wallet_tr.payment.challan.challan_no }}</td>
                                             <td>{{ wallet_tr.amount }}</td>
                                             <td>-</td>
                                             <td>{{ wallet_tr.remaining_balance }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                    {% for wa in wallet.walletadvance_set.all|dictsortreversed:"id" %}
-                                        <tr class="bg-success">
-                                            <td>{{ wa.payed_on|date:"d/m/Y" }}</td>
-                                            <td>{{ wa.previous_balance }}</td>
-                                            <td>-</td>
-                                            <td>-</td>
-                                            <td>{{ wa.amount }}</td>
-                                            <td>{{ wa.remaining_balance }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -94,3 +95,14 @@
     </div>
 
 {% endblock %}
+
+
+{% block custom_script %}
+    <script>
+        $('#wellet_history_table').dataTable({
+        "searching": false,
+        "paging": false,
+        });
+    </script>
+{% endblock %}
+

@@ -1,6 +1,7 @@
 {% extends "portal/base.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
+{% load widget_tweaks %}
 
 
 {% block title %}Ad New Loading{% endblock %}
@@ -16,7 +17,18 @@
                 <div class="form">
                     <form method="post">
                         {% csrf_token %}
-                        {{ form|crispy }}
+
+                        <div class="row">
+                            <div class="col-lg-6 form-group">
+                                {{ form.dealer|as_crispy_field }}
+                            </div>
+                            <div class="col-lg-6 form-group">
+                                {{ form.created_on|attr:"type:date"|as_crispy_field }}
+                            </div>
+                        </div>
+                        {{ form.vehicle_details|as_crispy_field }}
+                        {{ form.extra_info|as_crispy_field }}
+
                         <button class="btn btn-primary" type="submit">Create</button>
                     </form>
                 </div>

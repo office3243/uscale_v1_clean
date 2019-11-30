@@ -52,18 +52,20 @@
                             <thead>
                                 <th>No</th>
                                 <th>Mode</th>
+                                <th>Date</th>
                                 <th>Amount</th>
                                 <th>ACC / Wallet</th>
-                                <th>Paid On</th>
+                                <th>Payment No.</th>
                                 <th>Status</th>
                             </thead>
                             {% for w_transaction in payment.wallettransaction_set.all  %}
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>Wallet</td>
+                                    <td>{{ w_transaction.payed_on }}</td>
                                     <td>{{ w_transaction.amount }}</td>
                                     <td>{{ w_transaction.wallet.party.get_display_text }}</td>
-                                    <td>{{ w_transaction.payed_on }}</td>
+                                    <td>-</td>
                                     <td><i class="fa fa-check text-success"></i></td>
                                 </tr>
                             {% endfor %}
@@ -71,9 +73,10 @@
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>Account</td>
+                                    <td>{{ ac_transaction.created_on }}</td>
                                     <td>{{ ac_transaction.amount }}</td>
                                     <td>{{ ac_transaction.bank_account.bank_name }}</td>
-                                    <td>{{ ac_transaction.payed_on }}</td>
+                                    <td>{{ ac_transaction.actr_no }}</td>
                                     <td>
                                         {% if ac_transaction.status == "DN" %}
                                             <i class="fa fa-check text-success"></i>
@@ -87,9 +90,10 @@
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>CASH</td>
+                                    <td>{{ cs_transaction.payed_on }}</td>
                                     <td>{{ cs_transaction.amount }}</td>
                                     <td>-</td>
-                                    <td>{{ cs_transaction.payed_on }}</td>
+                                    <td>-</td>
                                     <td>
                                         {% if cs_transaction.status == "DN" %}
                                             <i class="fa fa-check text-success"></i>

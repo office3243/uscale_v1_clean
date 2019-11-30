@@ -14,7 +14,7 @@ class LoadingAddView(LoginRequiredMixin, CreateView):
 
     model = Loading
     template_name = "loadings/add.html"
-    fields = ("dealer", "vehicle_details", "extra_info")
+    fields = ("dealer", "vehicle_details", "extra_info", "created_on")
     success_url = reverse_lazy("loadings:list")
 
     def form_valid(self, form):
@@ -27,7 +27,7 @@ class LoadingAddView(LoginRequiredMixin, CreateView):
 
 @login_required
 def entries(request, id):
-    loading = get_object_or_404(Loading, id=id, status="CR")
+    loading = get_object_or_404(Loading, id=id)
     weight_formset = inlineformset_factory(Loading, LoadingWeight, fields=("material", "weight_count"), extra=1)
     if request.method == "POST":
         formset = weight_formset(request.POST, instance=loading)

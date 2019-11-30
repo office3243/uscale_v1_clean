@@ -114,13 +114,16 @@ def add(request, challan_no):
             messages.warning(request, "Total Amount should be less or equal to {} and it is {}".format(payment.amount, total_pay))
             return redirect(challan.get_payment_add_url)
         if cash_amount:
-            cash_transaction = CashTransaction.objects.create(payment=payment, amount=cash_amount, payed_on=timezone.now(), status="DN")
+            cash_payment_date = (request.POST.get('cash_payment_date') or None)
+            cash_transaction = CashTransaction.objects.create(payment=payment, amount=cash_amount,
+                                                              payed_on=cash_payment_date, status="DN")
         if account_amount_1:
             bank_account_id_1 = (request.POST.get('bank_account') or None)
             ac_payment_date = (request.POST.get('ac_payment_date') or None)
             bank_account_1 = get_object_or_404(BankAccount, id=bank_account_id_1, party=party)
             account_transaction_1 = AccountTransaction.objects.create(payment=payment, amount=account_amount_1,
-                                                                      bank_account=bank_account_1, actr_no=actr_no, created_on=ac_payment_date)
+                                                                      bank_account=bank_account_1, actr_no=actr_no,
+                                                                      created_on=ac_payment_date)
         if wallet is not None and ac_less_amount:
             wallet_transaction, created = WalletTransaction.objects.get_or_create(payment=payment, wallet=wallet)
             print(created, "--------------------------------------")

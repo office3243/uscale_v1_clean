@@ -29,6 +29,7 @@
                             <th class="th-sm">No.</th>
                             <th class="th-sm">Party</th>
                             <th class="th-sm">Challan NO</th>
+                            <th class="th-sm">RM Amount</th>
                             <th class="th-sm">Total Amount</th>
                             <th class="th-sm">Entries Done</th>
                             <th class="th-sm">Reports Done</th>
@@ -44,6 +45,7 @@
                                         <td>{{ forloop.counter }}</td>
                                         <td>{{ challan.party.name }}</td>
                                         <td><a href="{{ challan.get_absolute_url }}">{{ challan.challan_no }}</a></td>
+                                        <td>{{ challan.payment.get_remaining_amount }}</td>
                                         <td>{{ challan.total_amount }}</td>
                                         <td>
                                             <i class="fa {% if challan.is_entries_done %}fa-check text-success{% else %}fa-times text-danger{% endif %}"></i>

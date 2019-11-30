@@ -251,7 +251,8 @@ class Challan(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.PROTECT)
 
     party = models.ForeignKey("parties.Party", on_delete=models.CASCADE)
-    challan_no = models.PositiveIntegerField(blank=True, null=True)
+    challan_no = models.PositiveIntegerField(unique=True
+                                             )
     vehicle_details = models.CharField(max_length=128, blank=True, null=True)
     weights_amount = models.DecimalField(max_digits=9, decimal_places=2, default=decimal.Decimal(0.00))
     extra_charges = models.DecimalField(verbose_name="Kata Charges", max_digits=9, decimal_places=2,

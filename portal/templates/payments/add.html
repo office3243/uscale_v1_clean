@@ -34,9 +34,7 @@
                         </tr>
                         <tr>
                             <th>Date</th>
-                            <td>{{ challan.created_on.date }}</td>
-                            <th>Time</th>
-                            <td>{{ challan.created_on.time }}</td>
+                            <td colspan="3">{{ challan.created_on }}</td>
                         </tr>
                         <tr>
                             <th>Entries Done</th>
@@ -74,18 +72,20 @@
                             <thead>
                                 <th>No</th>
                                 <th>Mode</th>
+                                <th>Date</th>
                                 <th>Amount</th>
                                 <th>ACC / Wallet</th>
-                                <th>Created On</th>
+                                <th>Payment No.</th>
                                 <th>Status</th>
                             </thead>
                             {% for w_transaction in payment.wallettransaction_set.all  %}
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>Wallet</td>
+                                    <td>{{ w_transaction.payed_on }}</td>
                                     <td>{{ w_transaction.amount }}</td>
                                     <td>{{ w_transaction.wallet.party.get_display_text }}</td>
-                                    <td>{{ w_transaction.payed_on }}</td>
+                                    <td>-</td>
                                     <td><i class="fa fa-check text-success"></i></td>
                                 </tr>
                             {% endfor %}
@@ -93,9 +93,10 @@
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>Account</td>
+                                    <td>{{ ac_transaction.created_on }}</td>
                                     <td>{{ ac_transaction.amount }}</td>
                                     <td>{{ ac_transaction.bank_account.bank_name }}</td>
-                                    <td>{{ ac_transaction.payed_on }}</td>
+                                    <td>{{ ac_transaction.actr_no }}</td>
                                     <td>
                                         {% if ac_transaction.status == "DN" %}
                                             <i class="fa fa-check text-success"></i>
@@ -109,9 +110,10 @@
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>CASH</td>
+                                    <td>{{ cs_transaction.payed_on }}</td>
                                     <td>{{ cs_transaction.amount }}</td>
                                     <td>-</td>
-                                    <td>{{ cs_transaction.payed_on }}</td>
+                                    <td>-</td>
                                     <td>
                                         {% if cs_transaction.status == "DN" %}
                                             <i class="fa fa-check text-success"></i>
@@ -187,9 +189,15 @@
                                                 <label class="custom-control-label" for="is_cash">Do You Want Cash Transaction ? </label>
                                             </div>
                                             <br>
-                                            <div style="margin-left: 20px;display: none" class="form-group cash_mode_section">
-                                                <label for="cash_amount">Cash Amount</label>
-                                                <input name="cash_amount" class="form-control" id="cash_amount" type="number">
+                                            <div class="row cash_mode_section" style="margin-left: 20px;display: none">
+                                                <div class="form-group col-lg-6">
+                                                    <label for="cash_amount">Cash Amount</label>
+                                                    <input name="cash_amount" class="form-control" id="cash_amount" type="number">
+                                                </div>
+                                                <div class="form-group col-lg-6">
+                                                    <label for="cash_payment_date">Date</label>
+                                                    <input class="form-control" id="cash_payment_date" name="cash_payment_date" type="date" value="dd/11/2019">
+                                                </div>
                                             </div>
                                             <hr>
                                         </div>

@@ -10,9 +10,9 @@ class Loading(models.Model):
 
     loading_no = models.CharField(max_length=12, unique=True)
     dealer = models.ForeignKey("dealers.Dealer", on_delete=models.PROTECT)
-    vehicle_details = models.TextField(blank=True)
+    vehicle_details = models.CharField(max_length=264)
     extra_info = models.TextField(blank=True)
-    created_on = models.DateTimeField(auto_now_add=True)
+    created_on = models.DateField(verbose_name="Loading Date", )
     updated_on = models.DateTimeField(auto_now=True)
 
     status = models.CharField(max_length=2, choices=STATUS_CHOICES, default="CR")
@@ -23,6 +23,13 @@ class Loading(models.Model):
     @property
     def get_display_text(self):
         return self.__str__()
+
+    @property
+    def get_weight_display(self):
+        text = ""
+        for loading_weight in self.loadingweight_set.all():
+            text += f"{loading_weight.weight_count}  "
+        return text
 
     @property
     def get_entries_url(self):

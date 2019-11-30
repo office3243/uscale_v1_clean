@@ -87,7 +87,7 @@ class WalletAdvanceCreateView(ExecutiveRequiredMixin, CreateView):
     model = WalletAdvance
     template_name = "cms_admin/wallets/wallet_advances/create.html"
     success_url = reverse_lazy("cms_admin:wallet_advances_list")
-    fields = ("wallet", "amount", "gateway")
+    fields = ("wallet", "amount", "gateway", "payed_on")
 
 
 class WalletUpdateView(ExecutiveRequiredMixin, UpdateView):

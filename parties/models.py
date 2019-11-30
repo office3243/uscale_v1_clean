@@ -155,13 +155,13 @@ class WalletAdvance(models.Model):
 
     GATEWAY_CHOICES = (("CS", "Cash"), ("AC", "Account"), ("IP", "In Payment"))
 
-    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE)
+    wallet = models.ForeignKey(Wallet, verbose_name="Party", on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=9, decimal_places=2)
     gateway = models.CharField(max_length=2, choices=GATEWAY_CHOICES, default="CS")
-    previous_balance = models.DecimalField(default=0.0, max_digits=7, decimal_places=2)
+    opening_balance = models.DecimalField(default=0.0, max_digits=7, decimal_places=2)
     remaining_balance = models.DecimalField(default=0.0, max_digits=7, decimal_places=2)
 
-    created_on = models.DateTimeField(default=timezone.now)
+    payed_on = models.DateField(verbose_name="Payed On")
 
     image = models.ImageField(upload_to="parties/wallets/advances/", blank=True, null=True)
 
@@ -196,5 +196,23 @@ def refund_and_delete(sender, instance, *args, **kwargs):
     instance.refund_amount()
 
 
+def assign_opening_balance(sender, created, instance, *args, **kwargs):
+    if created:
+        opening_balance = instance.wallet.balance
+        if instance.opening_balance != opening_balance:
+            instance.opening_balance = opening_balance
+            instance.save()
+
+
+def assign_remaining_balance(sender, created, instance, *args, **kwargs):
+    if created:
+        remaining_balance = instance.opening_balance + instance.amount
+        if instance.remaining_balance != remaining_balance:
+            instance.remaining_balance = remaining_balance
+            instance.save()
+
+
+post_save.connect(assign_opening_balance, sender=WalletAdvance)
+post_save.connect(assign_remaining_balance, sender=WalletAdvance)
 post_save.connect(add_amount_to_wallet, sender=WalletAdvance)
 pre_delete.connect(refund_and_delete, sender=WalletAdvance)

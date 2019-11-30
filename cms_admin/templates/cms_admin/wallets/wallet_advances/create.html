@@ -1,5 +1,7 @@
 {% extends "cms_admin/base.html" %}
 {% load crispy_forms_tags %}
+{% load widget_tweaks %}
+
 
 {% block title %}Create Wallet Advance{% endblock %}
 
@@ -14,7 +16,24 @@
                 <div>
                     <form method="post">
                         {% csrf_token %}
-                        {{ form|crispy }}
+{#                        {{ form|crispy }}#}
+
+                        <div class="row">
+                            <div class="col-lg-6 form-group">
+                                {{ form.wallet|as_crispy_field }}
+                            </div>
+                            <div class="col-lg-6 form-group">
+                                {{ form.payed_on|attr:"type:date"|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-6 form-group">
+                                {{ form.amount|as_crispy_field }}
+                            </div>
+                            <div class="col-lg-6 form-group">
+                                {{ form.gateway|as_crispy_field }}
+                            </div>
+                        </div>
                         <button class="btn btn-success" type="submit">Create</button>
                     </form>
                 </div>
