@@ -42,7 +42,7 @@
                                         <td class="bg-info-us">{{ payment.amount }}</td>
                                         <td class="bg-success-us">{{ payment.payed_amount }}</td>
                                         <td class="bg-danger-us">{{ payment.get_remaining_amount }}</td>
-                                        <td>{{ payment.get_ac_tr_amount }} ({% for actr in payment.accounttransaction_set.all %}{{ actr.actr_no }}{% endfor %})</td>
+                                        <td>{{ payment.get_ac_tr_amount }} ({% for actr in payment.accounttransaction_set.all %}{{ actr.actr_no }}{% if not forloop.last %} / {% endif %}{% endfor %})</td>
                                         <td>{{ payment.get_wallet_tr_amount }}</td>
                                         <td>{{ payment.get_cash_tr_amount }}</td>
                                         <td>
