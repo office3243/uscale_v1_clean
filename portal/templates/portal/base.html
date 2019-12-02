@@ -47,6 +47,9 @@
     <script type="text/javascript" src="{% static "js/addons/datatables.min.js" %}"></script>
     <script src="{% static "js/addons/datatables-select.min.js" %}" rel="stylesheet"></script>
 
+    <script>
+        $(".dateinput").datepicker({ dateFormat: 'dd/mm/yy' }).val("dd/mm/yyyy");
+    </script>
 
     {% block custom_script %}
     {% endblock %}

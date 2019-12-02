@@ -20,8 +20,8 @@
                             <td>{{ challan.challan_no }}</td>
                         </tr>
                         <tr>
-                            <th>Date Time</th>
-                            <td>{{ challan.created_on.date }} - {{ challan.created_on.time }}</td>
+                            <th>Date</th>
+                            <td>{{ challan.created_on }}</td>
                             <th>Created By</th>
                             <td>{{ challan.created_by }}</td>
                         </tr>
@@ -32,14 +32,14 @@
                             <td>{{ challan.extra_charges }}</td>
                         </tr>
                         <tr>
-                            <th>Total Amount</th>
-                            <td>{{ challan.total_amount }}</td>
-                            <th>Amount Payed</th>
-                            <td>{{ challan.payment.payed_amount }}</td>
+                            <th class="bg-info-us">Total Amount</th>
+                            <td class="bg-info-us">{{ challan.total_amount }}</td>
+                            <th class="bg-success-us">Amount Payed</th>
+                            <td class="bg-success-us">{{ challan.payment.payed_amount }}</td>
                         </tr>
                         <tr>
-                            <th>Remaining Amount</th>
-                            <td>{{ challan.payment.get_remaining_amount }}</td>
+                            <th class="bg-danger-us">Remaining Amount</th>
+                            <td class="bg-danger-us">{{ challan.payment.get_remaining_amount }}</td>
                             <th>Amount On Hold</th>
                             <td>{{ challan.payment.calculate_payed_amount_pending }}</td>
                         </tr>

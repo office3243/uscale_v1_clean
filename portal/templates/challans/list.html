@@ -26,27 +26,26 @@
                 <div class="table p-3 border" style="border-radius: 5px">
                      <table id="dt-basic-checkbox" class="table table-striped table-bordered" cellspacing="0" width="100%">
                          <thead class="thead-light">
-                            <th class="th-sm">No.</th>
                             <th class="th-sm">Party</th>
                             <th class="th-sm">Challan NO</th>
-                            <th class="th-sm">RM Amount</th>
-                            <th class="th-sm">Total Amount</th>
+                            <th class="th-sm">Date</th>
+                            <th>RM Amount</th>
+                            <th>Total Amount</th>
                             <th class="th-sm">Entries Done</th>
                             <th class="th-sm">Reports Done</th>
                             <th class="th-sm">Payed</th>
                             <th class="th-sm">Status</th>
-                            <th class="th-sm">Date</th>
                             <th class="th-sm">Actions</th>
                          </thead>
                          <tbody>
                              {% if challans %}
                                 {% for challan in challans %}
                                     <tr>
-                                        <td>{{ forloop.counter }}</td>
                                         <td>{{ challan.party.name }}</td>
                                         <td><a href="{{ challan.get_absolute_url }}">{{ challan.challan_no }}</a></td>
-                                        <td>{{ challan.payment.get_remaining_amount }}</td>
-                                        <td>{{ challan.total_amount }}</td>
+                                        <td>{{ challan.get_date_display }}</td>
+                                        <td class="bg-danger-us">{{ challan.payment.get_remaining_amount }}</td>
+                                        <td class="bg-info-us">{{ challan.total_amount }}</td>
                                         <td>
                                             <i class="fa {% if challan.is_entries_done %}fa-check text-success{% else %}fa-times text-danger{% endif %}"></i>
                                             <span style="display: none">{{ challan.is_entries_done }}</span>
@@ -63,7 +62,6 @@
                                             <i class="fa {% if challan.status == "DN" %}fa-check text-success{% else %}fa-times text-danger{% endif %}"></i>
                                             <span style="display: none">{{ challan.get_status_display }}</span>
                                         </td>
-                                        <td>{{ challan.get_date_display }}</td>
                                         <td><a href="{{ challan.get_absolute_url }}"><i class="fa fa-eye"></i></a></td>
                                     </tr>
                                 {% endfor %}

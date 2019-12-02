@@ -8,6 +8,7 @@ from bank_accounts.models import BankAccount
 from django.contrib import messages
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
+import datetime
 
 #
 # @login_required
@@ -85,48 +86,47 @@ def add(request, challan_no):
     challan.save()
     party = challan.party
     wallet = party.get_wallet
-    print(wallet)
     payment = Payment.objects.get_or_create(challan=challan)[0]
     payment.save()
     challan = payment.challan
     if request.method == "POST":
-        print(request.POST)
         extra_charges = decimal.Decimal(request.POST.get('extra_charges') or 0)
         round_amount = decimal.Decimal(request.POST.get('round_amount') or 0)
-        print(extra_charges, round_amount)
         if extra_charges or round_amount:
             if extra_charges:
                 challan.extra_charges = extra_charges
             if round_amount:
-                print("round True")
                 challan.round_amount = round_amount
             challan.save()
-        print(challan.round_amount, challan.extra_charges)
         cash_amount = decimal.Decimal(request.POST.get('cash_amount') or 0)
         account_amount_1 = decimal.Decimal(request.POST.get('account_amount') or 0)
         actr_no = request.POST.get("actr_no") or None
         ac_less_amount = decimal.Decimal(request.POST.get('ac_less_amount') or 0)
         # total_pay = cash_amount + account_amount_1 + ac_less_amount + payment.payed_amount + round_amount - extra_charges
         total_pay = cash_amount + account_amount_1 + ac_less_amount + payment.payed_amount - extra_charges
-        print(total_pay, payment.amount, "@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
         # return redirect(challan.get_absolute_url)
         if total_pay > payment.amount:
             messages.warning(request, "Total Amount should be less or equal to {} and it is {}".format(payment.amount, total_pay))
             return redirect(challan.get_payment_add_url)
         if cash_amount:
             cash_payment_date = (request.POST.get('cash_payment_date') or None)
+            if cash_payment_date is not None:
+                cash_payment_date = timezone.datetime.strptime(cash_payment_date, "%d/%m/%Y")
             cash_transaction = CashTransaction.objects.create(payment=payment, amount=cash_amount,
                                                               payed_on=cash_payment_date, status="DN")
         if account_amount_1:
             bank_account_id_1 = (request.POST.get('bank_account') or None)
             ac_payment_date = (request.POST.get('ac_payment_date') or None)
+            print(ac_payment_date)
+            if ac_payment_date is not None:
+                ac_payment_date = timezone.datetime.strptime(ac_payment_date, "%d/%m/%Y")
+            print(ac_payment_date)
             bank_account_1 = get_object_or_404(BankAccount, id=bank_account_id_1, party=party)
             account_transaction_1 = AccountTransaction.objects.create(payment=payment, amount=account_amount_1,
                                                                       bank_account=bank_account_1, actr_no=actr_no,
                                                                       created_on=ac_payment_date)
         if wallet is not None and ac_less_amount:
             wallet_transaction, created = WalletTransaction.objects.get_or_create(payment=payment, wallet=wallet)
-            print(created, "--------------------------------------")
             wallet_transaction.amount += ac_less_amount
             wallet_transaction.save()
         payment.save()

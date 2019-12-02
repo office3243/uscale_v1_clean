@@ -140,7 +140,10 @@
                     {% endif %}
                 {% endwith %}
 
-                <div class="row">
+                <div id="no_rm_amount_warning" style="display: none">
+                    <h4 class="alert alert-danger">No amount remaining to pay</h4>
+                </div>
+                <div class="row" id="pay_section">
                     <div class="col-lg-6" id="payment_form_section">
                         <div class="card border" style="box-shadow: none">
                             <div class="card-header">
@@ -196,7 +199,7 @@
                                                 </div>
                                                 <div class="form-group col-lg-6">
                                                     <label for="cash_payment_date">Date</label>
-                                                    <input class="form-control" id="cash_payment_date" name="cash_payment_date" type="date" value="dd/11/2019">
+                                                    <input class="form-control dateinput" id="cash_payment_date" name="cash_payment_date" type="text" value="dd/mm/yyyy">
                                                 </div>
                                             </div>
                                             <hr>
@@ -236,7 +239,7 @@
                                                         </div>
                                                         <div class="form-group col-lg-5">
                                                             <label for="ac_payment_date">Date</label>
-                                                            <input class="form-control" id="ac_payment_date" name="ac_payment_date" type="date" value="dd/11/2019">
+                                                            <input class="form-control dateinput" id="ac_payment_date" name="ac_payment_date" type="text" value="dd/mm/yyyy" required>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -251,8 +254,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-6">
-                        <div style="box-shadow: none" class="border card m-0 p-0" id="payment_details_section">
+                    <div class="col-lg-6" id="payment_details_section">
+                        <div style="box-shadow: none" class="border card m-0 p-0">
                              <div class="card-header">
                                 <h5 class="m-auto">Payment Details</h5>
                             </div>
@@ -270,18 +273,22 @@
                                         <th>Round Amount</th>
                                         <td>{{ payment.challan.round_amount }}</td>
                                     </tr>
-                                    <tr>
+                                    <tr class="bg-info-us">
                                         <th>Total Amount</th>
                                         <td>{{ payment.amount }}</td>
                                     </tr>
-                                    <tr>
+                                    <tr class="bg-success-us">
                                         <th>Paid Amount</th>
                                         <td>{{ payment.payed_amount }}</td>
                                     </tr>
-                                    <tr>
-                                        <th>Amount To Pay</th>
+                                    <tr class="bg-danger-us">
+                                        <th>Remaining Amount</th>
                                         <td>{{ payment.get_remaining_amount }}</td>
                                     </tr>
+{#                                    <tr>#}
+{#                                        <th>Amount To Pay</th>#}
+{#                                        <td>{{ payment.get_remaining_amount }}</td>#}
+{#                                    </tr>#}
                                     <tr>
                                         <th>Wallet Deduct Amount</th>
                                         <td id="wallet_deduct_amount">-</td>
@@ -340,6 +347,12 @@
 
         let total_amount = {{ payment.amount }};
         let amount_to_pay = {{ payment.get_remaining_amount }};
+        if (amount_to_pay === 0){
+            $("#payment_form_section").hide();
+            $("#no_rm_amount_warning").show();
+            $("#payment_details_section").toggleClass("col-lg-6");
+            $("#pay_section").toggleClass("row");
+        }
         let total_pay = 0.00;
         let wallet_pay = false;
         let wallet_payable_amount = 0;

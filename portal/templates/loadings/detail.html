@@ -28,45 +28,17 @@
                         <tr>
                             <th>Entries Done</th>
                             <td>
-                                {% if loading.is_entries_done %}
+                                {% if not loading.status == "CR" %}
                                     <i class="fa fa-lg text-success fa-check"></i>
                                 {% else %}
                                     <a href="{{ loading.get_entries_url }}"><button class="btn btn-primary btn-sm">Goto Entries</button></a>
                                 {% endif %}
                             </td>
-                            <th>Reports Done</th>
+                            <th>Weights</th>
                             <td>
-                                {% if loading.is_reports_done %}
-                                    <i class="fa fa-lg text-success fa-check"></i>
-                                {% else %}
-                                    <a href="{{ loading.get_assign_reports_url }}"><button class="btn btn-primary btn-sm">Goto Reports</button></a>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Payment Done</th>
-                            <td>
-                                {% if loading.is_payed %}
-                                    <i class="fa fa-lg text-success fa-check"></i>
-                                {% else %}
-                                    {% if loading.is_entries_done %}
-                                        {% if loading.is_rates_assigned %}
-                                            <a href="{{ loading.get_payment_add_url }}"><button class="btn btn-primary btn-sm">Goto Payment</button></a>
-                                        {% else %}
-                                            <a href="{{ loading.get_assign_rates_url }}"><button class="btn btn-primary btn-sm">Goto Rates</button></a>
-                                        {% endif %}
-                                    {% else %}
-                                        Complete Entries First
-                                    {% endif %}
-                                {% endif %}
-                            </td>
-                            <th>Total Done</th>
-                            <td>
-                                {% if loading.status == "DN" %}
-                                    <i class="fa fa-lg text-success fa-check"></i>
-                                {% else %}
-                                    <i class="fa fa-lg text-danger fa-times"></i>
-                                {% endif %}
+                                {% for lw in loading.loadingweight_set.all %}
+                                    {{ lw.material.name }} = {{ lw.weight_count }} <br>
+                                {% endfor %}
                             </td>
                         </tr>
                     </tbody>

@@ -31,7 +31,7 @@
                             {{ form.challan_no|as_crispy_field }}
                         </div>
                         <div class="form-group col-lg-6">
-                            {{ form.created_on|attr:"type:date"|as_crispy_field }}
+                            {{ form.created_on|as_crispy_field }}
                         </div>
                     </div>
 
@@ -70,7 +70,7 @@
 
         // Onlaod All Functions to be called from here
         $(function () {
-            {#$("#id_created_on").datepicker();#}
+
             assignPTID();
         });
     </script>

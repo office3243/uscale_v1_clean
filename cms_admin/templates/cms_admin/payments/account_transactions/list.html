@@ -20,7 +20,6 @@
                  <div class="table p-3 border" style="border-radius: 5px">
                      <table id="dt-basic-checkbox" class="table table-striped table-bordered" cellspacing="0" width="100%">
                          <thead class="thead-light">
-                            <th style="width: 30px">NO</th>
                             <th>Date</th>
                             <th>Challan</th>
                             <th>Party</th>
@@ -38,14 +37,13 @@
                              {% if account_transactions %}
                                  {% for account_transaction in account_transactions %}
                                      <tr>
-                                        <td>{{ forloop.counter }}</td>
                                         <td>{{ account_transaction.created_on }}</td>
                                         <td>{{ account_transaction.payment.challan.challan_no }}</td>
                                         <td>{{ account_transaction.bank_account.party }}</td>
                                         <td>{{ account_transaction.actr_no }}</td>
                                         <td>{{ account_transaction.amount }}</td>
-                                        <td>{{ account_transaction.payment.get_remaining_amount }}</td>
-                                        <td>{{ account_transaction.payment.amount }}</td>
+                                        <td class="bg-danger-us">{{ account_transaction.payment.get_remaining_amount }}</td>
+                                        <td class="bg-info-us">{{ account_transaction.payment.amount }}</td>
                                         <td>{{ account_transaction.bank_account.get_display_text }}</td>
                                         <td>{{ account_transaction.payment_party }}</td>
                                         <td>{{ account_transaction.payed_on }}</td>
